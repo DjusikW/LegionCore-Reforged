@@ -1,0 +1,41 @@
+###################################################################################################
+# mod-individual-progression configuration
+#
+# Copy this file to individual-progression.conf next to worldserver.conf to change a value: the
+# .dist file is read first (defaults), then individual-progression.conf over it.
+# ".reload config" reads both again.
+#
+# Stages: 10 Classic, 20 Burning Crusade, 30 Wrath of the Lich King, 40 Cataclysm,
+#         50 Mists of Pandaria, 60 Warlords of Draenor, 70 Legion.
+###################################################################################################
+
+[worldserver]
+
+#
+#    IndividualProgression.Enable
+#        Master switch. When disabled, stages are kept but nothing is limited.
+#        Default: 1 - (Enabled)
+#                 0 - (Disabled)
+
+IndividualProgression.Enable = 1
+
+#
+#    IndividualProgression.StartingStage
+#        Stage of a new character. A character that logs in for the first time with the module
+#        gets the higher of this stage and the stage of its level.
+#        Default: 10
+
+IndividualProgression.StartingStage = 10
+
+#
+#    IndividualProgression.LevelCap.<stage>
+#        Highest level of each stage.
+#        Default: 60, 70, 80, 85, 90, 100, 110
+
+IndividualProgression.LevelCap.10 = 60
+IndividualProgression.LevelCap.20 = 70
+IndividualProgression.LevelCap.30 = 80
+IndividualProgression.LevelCap.40 = 85
+IndividualProgression.LevelCap.50 = 90
+IndividualProgression.LevelCap.60 = 100
+IndividualProgression.LevelCap.70 = 110
