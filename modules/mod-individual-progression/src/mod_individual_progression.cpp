@@ -118,6 +118,23 @@ public:
         player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, player->GetOrientation());
     }
 
+    // Introductory quests and quests of later expansions.
+    bool CanTakeQuest(Player* player, Quest const* quest, bool msg) override
+    {
+        if (!sIndividualProgression->IsEnabled())
+            return true;
+
+        uint8 stage = sIndividualProgression->GetStage(player->GetGUID());
+        uint8 need = sIndividualProgression->QuestStage(quest);
+        if (!stage || need <= stage)
+            return true;
+
+        if (msg)
+            ChatHandler(player).PSendSysMessage("|cffff4040Недоступно:|r задание открывается на этапе %u (%s). Ваш этап: %u.",
+                need, sIndividualProgression->StageName(need).c_str(), stage);
+        return false;
+    }
+
     void OnLogout(Player* player) override
     {
         sIndividualProgression->OnLogout(player->GetGUID());
