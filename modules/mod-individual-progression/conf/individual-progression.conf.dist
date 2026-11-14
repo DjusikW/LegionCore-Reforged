@@ -39,3 +39,13 @@ IndividualProgression.LevelCap.40 = 85
 IndividualProgression.LevelCap.50 = 90
 IndividualProgression.LevelCap.60 = 100
 IndividualProgression.LevelCap.70 = 110
+
+#
+#    IndividualProgression.CustomProgression
+#        Extra stage transitions: "entry stage, entry stage". Killing the creature moves every player
+#        of the instance (outside instances: the killer's group nearby) to the stage. Overrides the
+#        final bosses of individual_progression_boss for the same entry.
+#        Example: "15727 20, 25315 30"
+#        Default: ""
+
+IndividualProgression.CustomProgression = ""

@@ -1,11 +1,17 @@
 #include "IndividualProgression.h"
 #include "Chat.h"
 #include "Config.h"
+#include "Creature.h"
 #include "DatabaseEnv.h"
+#include "DB2Stores.h"
+#include "Group.h"
 #include "Log.h"
+#include "Map.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
+#include "QuestDef.h"
 #include "ScriptMgr.h"
+#include "WorldSession.h"
 
 class individual_progression_world : public WorldScript
 {
@@ -47,6 +53,36 @@ public:
         uint8 cap = sIndividualProgression->LevelCap(sIndividualProgression->GetStage(player->GetGUID()));
         if (cap && player->getLevel() >= cap)
             amount = 0;
+    }
+
+    // Final boss of a stage: everyone in the instance (or the killer's group nearby, outside instances) moves on.
+    void OnCreatureDeath(Creature* killed, Unit* killer) override
+    {
+        if (!sIndividualProgression->IsEnabled())
+            return;
+
+        uint8 stage = sIndividualProgression->BossStage(killed->GetEntry());
+        if (!stage)
+            return;
+
+        Map* map = killed->GetMap();
+        TC_LOG_INFO("server.scripts", "[mod-individual-progression] %u (%s) killed on map %u: stage %u", killed->GetEntry(), killed->GetName(), map->GetId(), stage);
+
+        if (map->IsDungeon())
+        {
+            for (auto const& ref : map->GetPlayers())
+                if (Player* player = ref.getSource())
+                    sIndividualProgression->Advance(player, stage);
+            return;
+        }
+
+        Player* player = killer ? killer->GetCharmerOrOwnerPlayerOrPlayerItself() : nullptr;
+        if (!player)
+            return;
+        if (Group* group = player->GetGroup())
+            group->ForEachMemberInMap(map, [stage](Player* member) { sIndividualProgression->Advance(member, stage); });
+        else
+            sIndividualProgression->Advance(player, stage);
     }
 
     void OnLogout(Player* player) override
