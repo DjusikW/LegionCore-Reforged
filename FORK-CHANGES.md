@@ -1,27 +1,29 @@
-# Изменения форка DjusikW
+# DjusikW fork changes
 
-Форк [Titans-Project/LegionCore-Reforged](https://github.com/Titans-Project/LegionCore-Reforged) для домашнего некоммерческого сервера WoW Legion 7.3.5. Ветка `djusikw/main` = апстрим `main` + правки ниже. Общие исправления по возможности отправляются в апстрим как pull request.
+**English** | [Русский](FORK-CHANGES.ru.md)
 
-Участники: DjusikW, Claude (Anthropic) — соавтор коммитов.
+Fork of [Titans-Project/LegionCore-Reforged](https://github.com/Titans-Project/LegionCore-Reforged) for a non-commercial home WoW Legion 7.3.5 server. Branch `djusikw/main` = upstream `main` + the changes below.
 
-Статусы: **проверено** — проверено в игре; **собрано** — собирается без ошибок, в игре не проверено или проверено частично.
+Contributors: DjusikW, Claude (Anthropic) as commit co-author.
 
-## Ядро
+Status: **tested** — checked in game; **built** — compiles, not tested in game or tested partially.
 
-| Изменение | Статус |
+## Core
+
+| Change | Status |
 |---|---|
-| Существа класса «разбойник» получают полосу энергии. Раньше энергия у существ всегда была 0, и боссы с фазами по энергии (Низендра, Элерета Ренферал, Кенарий, Драконы Кошмара и др.) застревали в первой фазе. | проверено частично: у Низендры энергия есть, «Заразное дыхание» применяется |
-| Автобаланс подземелий и рейдов под число игроков (`AutoBalance.*` в `worldserver.conf`, по умолчанию выключен), видимая аура 900100 «Автобаланс» (`sql/updates/hotfixes/2026_11_14_00_autobalance_aura.sql`). | собрано |
+| Rogue-class creatures get an energy bar. Creature energy was always 0, so bosses with energy-driven phases (Nythendra, Elerethe Renferal, Cenarius, Dragons of Nightmare and others) stayed in their first phase. | partially tested: Nythendra has energy and casts Infested Breath |
+| Dungeon and raid autobalance by player count (`AutoBalance.*` in `worldserver.conf`, off by default), visible aura 900100 "AutoBalance" (`sql/updates/hotfixes/2026_11_14_00_autobalance_aura.sql`). | built |
 
-## Изумрудный Кошмар
+## Emerald Nightmare
 
-| Изменение | Статус |
+| Change | Status |
 |---|---|
-| Исправления скриптов Низендры, Ил'гинота, Элереты Ренферал, Кенария | собрано, проверка в игре идёт |
-| Треш перед Ксавием — 5 волн | собрано |
-| База (`sql/updates/world/2026_11_14_00_emerald_nightmare.sql`): удары «Ярости дракона» повторяются, полёты Элереты между платформами, Сущность ясности для задания 44283, модель Обитателя тьмы, Драконы Кошмара летают выше | применено к базе, проверка идёт |
+| Script fixes for Nythendra, Il'gynoth, Elerethe Renferal, Cenarius | built, in-game testing in progress |
+| Trash before Xavius — 5 waves | built |
+| DB (`sql/updates/world/2026_11_14_00_emerald_nightmare.sql`): Drake's Fury strikes repeat, Elerethe flies between platforms, Essence of Clarity for quest 44283, Shadow Dweller model, Nightmare Drakes fly higher | applied to DB, testing in progress |
 
-## Известные проблемы
+## Known issues
 
-- Изумрудный Кошмар: драконы перед вторым боссом не вступают в бой; анимация Элереты на паутине; у Низендры нет «Удара хвостом» (203024).
-- Сценарий пробного персонажа (карты 1554/1557) не реализован.
+- Emerald Nightmare: drakes before the second boss don't aggro; Elerethe web animation; Nythendra has no Tail Lash (203024).
+- Trial character scenario (maps 1554/1557) is not implemented.
