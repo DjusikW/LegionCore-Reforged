@@ -1,5 +1,7 @@
--- Portions Copyright (C) 2026 DjusikW <https://github.com/DjusikW>
--- AutoBalance: visible aura "Автобаланс" (spell 900100) on creatures scaled by the core.
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+-- Copyright (C) 2026 DjusikW <https://github.com/DjusikW>
+-- mod-autobalance: visible aura "Автобаланс" (spell 900100) on creatures scaled by the module.
+-- Apply to the hotfixes database (the core SQL updater does not read module folders).
 -- The stack count shows the number of players the creature is balanced for.
 -- Effect amount = stack count (base points 1), sent to the client (SPELL_ATTR8_AURA_SEND_AMOUNT) for $w1 in the tooltip.
 -- Dummy aura on self, infinite, up to 255 stacks, no dispel type (cannot be dispelled or stolen),
