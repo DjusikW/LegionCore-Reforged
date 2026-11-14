@@ -12,6 +12,7 @@
 #include <regex>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 class Player;
 class Quest;
@@ -51,6 +52,10 @@ public:
     uint8 QuestStage(Quest const* quest) const;
     uint8 BossStage(uint32 entry) const;
 
+    // Encounters that end without a creature death: instance boss id set to DONE -> next stage.
+    struct Encounter { uint32 mapId; uint32 bossId; uint8 stage; };
+    std::vector<Encounter> const& Encounters() const { return _encounters; }
+
     // Moves a logged-in character up to the stage (never down) and tells him.
     void Advance(Player* player, uint8 stage);
     // Levelling stage (x0) at the level cap of its expansion: on to the first raid tier (x1).
@@ -84,6 +89,7 @@ private:
     std::unordered_map<uint32, uint8> _zoneStages;
     std::unordered_map<uint32, uint8> _questStages;
     std::unordered_map<uint32, uint8> _bossStages;
+    std::vector<Encounter> _encounters;
     std::unordered_map<uint32, uint8> _customBossStages;  // IndividualProgression.CustomProgression
 
     mutable std::mutex _lock;

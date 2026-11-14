@@ -96,8 +96,14 @@ void IndividualProgression::LoadData()
     LoadTable("SELECT quest_id, stage FROM individual_progression_quest", _questStages);
     LoadTable("SELECT creature_entry, stage FROM individual_progression_boss", _bossStages);
 
-    TC_LOG_INFO("server.loading", ">> [mod-individual-progression] %u stages, %u maps, %u zones, %u quests, %u final bosses",
-        uint32(_stageNames.size()), uint32(_mapStages.size()), uint32(_zoneStages.size()), uint32(_questStages.size()), uint32(_bossStages.size()));
+    _encounters.clear();
+    if (QueryResult result = WorldDatabase.Query("SELECT map_id, boss_id, stage FROM individual_progression_encounter"))
+        do
+            _encounters.push_back({ (*result)[0].GetUInt32(), (*result)[1].GetUInt32(), (*result)[2].GetUInt8() });
+        while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> [mod-individual-progression] %u stages, %u maps, %u zones, %u quests, %u final bosses, %u encounters",
+        uint32(_stageNames.size()), uint32(_mapStages.size()), uint32(_zoneStages.size()), uint32(_questStages.size()), uint32(_bossStages.size()), uint32(_encounters.size()));
 }
 
 std::string IndividualProgression::StageName(uint8 stage) const

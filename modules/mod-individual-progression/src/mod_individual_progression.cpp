@@ -9,12 +9,14 @@
 #include "DatabaseEnv.h"
 #include "DB2Stores.h"
 #include "Group.h"
+#include "InstanceScript.h"
 #include "Log.h"
 #include "Map.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "QuestDef.h"
 #include "ScriptMgr.h"
+#include "ScriptedGossip.h"
 #include "WorldSession.h"
 
 class individual_progression_world : public WorldScript
@@ -89,6 +91,24 @@ public:
             sIndividualProgression->Advance(player, stage);
     }
 
+    // Encounters without a creature death (Madness of Deathwing): everyone in the instance moves on.
+    void OnInstanceBossDone(InstanceMap* map, uint32 bossId) override
+    {
+        if (!sIndividualProgression->IsEnabled())
+            return;
+
+        for (auto const& encounter : sIndividualProgression->Encounters())
+        {
+            if (encounter.mapId != map->GetId() || encounter.bossId != bossId)
+                continue;
+
+            TC_LOG_INFO("server.scripts", "[mod-individual-progression] boss %u done on map %u: stage %u", bossId, map->GetId(), encounter.stage);
+            for (auto const& ref : map->GetPlayers())
+                if (Player* player = ref.getSource())
+                    sIndividualProgression->Advance(player, encounter.stage);
+        }
+    }
+
     // Dungeons, raids and continents of a later stage (also the dungeon finder, with notify = false).
     bool CanEnterMap(Player* player, MapEntry const* map, bool notify) override
     {
@@ -159,6 +179,55 @@ public:
     void OnDelete(ObjectGuid const& guid) override
     {
         CharacterDatabase.PExecute("DELETE FROM character_progression WHERE guid = " UI64FMTD, guid.GetCounter());
+    }
+};
+
+// Thrall after Madness of Deathwing (Dragon Soul): closes the Cataclysm and gives the stage to whoever
+// missed the moment (joined the instance after the fight).
+class npc_individual_progression_thrall_ds : public CreatureScript
+{
+public:
+    npc_individual_progression_thrall_ds() : CreatureScript("npc_individual_progression_thrall_ds") { }
+
+    // Stage of the first encounter of this map already DONE (0: none).
+    static uint8 DoneStage(Creature* creature)
+    {
+        InstanceScript* instance = creature->GetInstanceScript();
+        if (!instance)
+            return 0;
+
+        for (auto const& encounter : sIndividualProgression->Encounters())
+            if (encounter.mapId == creature->GetMapId() && instance->GetBossState(encounter.bossId) == DONE)
+                return encounter.stage;
+        return 0;
+    }
+
+    bool OnGossipHello(Player* player, Creature* creature) override
+    {
+        if (creature->isQuestGiver())
+            player->PrepareQuestMenu(creature->GetGUID());
+
+        if (sIndividualProgression->IsEnabled() && DoneStage(creature))
+            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Смертокрыл повержен. Что ждет нас дальше?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
+        player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+    {
+        player->CLOSE_GOSSIP_MENU();
+        if (action != GOSSIP_ACTION_INFO_DEF + 1)
+            return true;
+
+        uint8 stage = DoneStage(creature);
+        if (!stage)
+            return true;
+
+        ChatHandler(player).PSendSysMessage("|cffffd200Тралл:|r Эпоха Катаклизма позади, Смертокрыл больше не грозит Азероту. "
+            "Отдохни, герой: за туманами на юге ждет Пандария.");
+        sIndividualProgression->Advance(player, stage);
+        return true;
     }
 };
 
@@ -244,5 +313,6 @@ void Addmod_individual_progressionScripts()
 
     new individual_progression_world();
     new individual_progression_player();
+    new npc_individual_progression_thrall_ds();
     new individual_progression_commandscript();
 }

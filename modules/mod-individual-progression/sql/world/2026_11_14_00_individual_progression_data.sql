@@ -36,6 +36,14 @@ CREATE TABLE IF NOT EXISTS `individual_progression_quest` (
   PRIMARY KEY (`quest_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS `individual_progression_encounter` (
+  `map_id` INT UNSIGNED NOT NULL,
+  `boss_id` INT UNSIGNED NOT NULL,
+  `stage` TINYINT UNSIGNED NOT NULL COMMENT 'stage reached when the boss is DONE',
+  `comment` VARCHAR(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`map_id`, `boss_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 DELETE FROM `individual_progression_stage`;
 INSERT INTO `individual_progression_stage` (`stage`, `name`) VALUES
 (0, 'Классика: прокачка 1-60, подземелья'),
@@ -240,6 +248,12 @@ INSERT INTO `individual_progression_boss` (`creature_entry`, `stage`, `comment`)
 (114537, 63, 'Helya (Trial of Valor)'),
 (104154, 64, 'Gul\'dan (The Nighthold)'),
 (117269, 65, 'Kil\'jaeden (Tomb of Sargeras)');
+
+DELETE FROM `individual_progression_encounter`;
+INSERT INTO `individual_progression_encounter` (`map_id`, `boss_id`, `stage`, `comment`) VALUES
+(967, 7, 40, 'Madness of Deathwing (Dragon Soul, DATA_MADNESS)');
+
+UPDATE `creature_template` SET `ScriptName` = 'npc_individual_progression_thrall_ds' WHERE `entry` = 58232; -- Thrall (Dragon Soul, after Madness of Deathwing)
 
 DELETE FROM `individual_progression_zone`;
 INSERT INTO `individual_progression_zone` (`zone_id`, `stage`, `comment`) VALUES
