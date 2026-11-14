@@ -1880,7 +1880,7 @@ void Creature::UpdateResistances(uint32 school)
 
 void Creature::UpdateArmor()
 {
-    SetArmor(int32(GetTotalAuraModValue(UNIT_MOD_ARMOR)));
+    SetArmor(int32(GetTotalAuraModValue(UNIT_MOD_ARMOR) * m_autoBalanceArmorMod)); // AutoBalance (1.0 while it is off)
 }
 
 void Creature::UpdateMaxHealth()
@@ -1903,16 +1903,37 @@ void Creature::UpdateMaxHealth()
             SetHealth(CalculatePct(GetMaxHealth(), percHealth));
         return;
     }
+
+    // AutoBalance: scaling to the actual number of players (1.0 while it is off)
+    float oldArmorMod = m_autoBalanceArmorMod;
+    UpdateAutoBalance();
+    if (oldArmorMod != m_autoBalanceArmorMod)
+        UpdateArmor();
+    if (m_autoBalanceAppliedManaMod != m_autoBalanceManaMod)
+        UpdateMaxPower(POWER_MANA);
+    float autoBalanceMod = GetAutoBalanceHealthMod();
+    bool autoBalanceChanged = autoBalanceMod != 1.0f || m_autoBalanceAppliedHealthMod != 1.0f;
+    m_autoBalanceAppliedHealthMod = autoBalanceMod;
+
     if (GetMap()->IsNeedRecalc())
     {
-        if (auto count = GetPlayerCount())
+        auto count = GetPlayerCount();
+        if (count || autoBalanceChanged)
         {
-            mod += _GetHealthModPersonal(count) * count;
-            value *= mod;
+            if (count)
+                mod += _GetHealthModPersonal(count) * count;
+            value *= mod * autoBalanceMod;
 
-            SetMaxHealth(static_cast<uint64>(value));
+            SetMaxHealth(std::max<uint64>(1, static_cast<uint64>(value)));
             SetHealth(CalculatePct(GetMaxHealth(), percHealth));
         }
+        return;
+    }
+
+    if (autoBalanceChanged)
+    {
+        SetMaxHealth(std::max<uint64>(1, static_cast<uint64>(value * autoBalanceMod)));
+        SetHealth(CalculatePct(GetMaxHealth(), percHealth));
         return;
     }
     SetMaxHealth(static_cast<uint64>(value));
@@ -1932,7 +1953,11 @@ uint32 Creature::GetPowerIndex(Powers power) const
 void Creature::UpdateMaxPower(Powers power)
 {
     if (GetPowerIndex(power) == MAX_POWERS)
+    {
+        if (power == POWER_MANA)
+            m_autoBalanceAppliedManaMod = m_autoBalanceManaMod; // AutoBalance: nothing to scale
         return;
+    }
 
     int32 cur_maxpower = GetMaxPower(power);
     int32 value = GetCreatePowers(power);
@@ -1942,6 +1967,23 @@ void Creature::UpdateMaxPower(Powers power)
     value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT, power);
     value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_MAX_MANA, power);
     value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_ADD_ENERGY_PERCENT, power);
+
+    // AutoBalance: mana scaled to the number of players, the current mana keeps its percentage when the scale changes
+    if (power == POWER_MANA && (m_autoBalanceManaMod != 1.0f || m_autoBalanceAppliedManaMod != 1.0f))
+    {
+        value = std::max(1, int32(value * m_autoBalanceManaMod));
+        if (m_autoBalanceAppliedManaMod != m_autoBalanceManaMod)
+        {
+            m_autoBalanceAppliedManaMod = m_autoBalanceManaMod;
+            if (cur_maxpower > 0 && cur_maxpower != value)
+            {
+                float pct = float(GetPower(power)) / float(cur_maxpower);
+                SetMaxPower(power, value);
+                SetPower(power, int32(value * pct));
+                return;
+            }
+        }
+    }
 
     if (cur_maxpower != value)
         SetMaxPower(power, value);
