@@ -85,6 +85,39 @@ public:
             sIndividualProgression->Advance(player, stage);
     }
 
+    // Dungeons, raids and continents of a later stage (also the dungeon finder, with notify = false).
+    bool CanEnterMap(Player* player, MapEntry const* map, bool notify) override
+    {
+        if (!sIndividualProgression->IsEnabled() || !map)
+            return true;
+
+        uint8 stage = sIndividualProgression->GetStage(player->GetGUID());
+        uint8 need = sIndividualProgression->MapStage(map->ID);
+        if (!stage || need <= stage)
+            return true;
+
+        if (notify)
+            ChatHandler(player).PSendSysMessage("|cffff4040Недоступно:|r %s открывается на этапе %u (%s). Ваш этап: %u.",
+                map->MapName->Str[player->GetSession()->GetSessionDbcLocale()], need, sIndividualProgression->StageName(need).c_str(), stage);
+        return false;
+    }
+
+    // Zones of a later stage on a shared map (Outland on the map of Eversong, Cataclysm zones): back to the hearthstone.
+    void OnUpdateZone(Player* player, uint32 newZone, uint32 /*newArea*/) override
+    {
+        if (!sIndividualProgression->IsEnabled() || player->isGameMaster())
+            return;
+
+        uint8 stage = sIndividualProgression->GetStage(player->GetGUID());
+        uint8 need = sIndividualProgression->ZoneStage(newZone);
+        if (!stage || need <= stage)
+            return;
+
+        ChatHandler(player).PSendSysMessage("|cffff4040Недоступно:|r эта зона открывается на этапе %u (%s). Ваш этап: %u. Возврат к камню возвращения.",
+            need, sIndividualProgression->StageName(need).c_str(), stage);
+        player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, player->GetOrientation());
+    }
+
     void OnLogout(Player* player) override
     {
         sIndividualProgression->OnLogout(player->GetGUID());
