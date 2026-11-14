@@ -24,6 +24,12 @@ Status: **tested** — checked in game; **built** — compiles, not tested in ga
 | Trash before Xavius — 5 waves | built |
 | DB (`sql/updates/world/2026_11_14_00_emerald_nightmare.sql`): Drake's Fury strikes repeat, Elerethe flies between platforms, Essence of Clarity for quest 44283, Shadow Dweller model, Nightmare Drakes fly higher | applied to DB, testing in progress |
 
+## Quests
+
+| Change | Status |
+|---|---|
+| DB (`sql/updates/world/2026_11_14_02_quest_item_loot_from_cata.sql`): 615 quest items that dropped nowhere get their loot from the Cataclysm 4.3.4 world DB (TDB 434.22011, The Cataclysm Preservation Project): 4487 creature, 125 gameobject and 93 container loot rows; 613 creatures without a loot table point at their own entry. New rows only. Quests 1–60 with an item that can't be obtained: 1083 → 48. | applied to DB, not tested in game |
+
 ## Known issues
 
 - Emerald Nightmare: drakes before the second boss don't aggro; Elerethe web animation; Nythendra has no Tail Lash (203024).
