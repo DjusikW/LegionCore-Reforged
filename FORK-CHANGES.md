@@ -14,6 +14,7 @@ Status: **tested** — checked in game; **built** — compiles, not tested in ga
 |---|---|
 | Rogue-class creatures get an energy bar. Creature energy was always 0, so bosses with energy-driven phases (Nythendra, Elerethe Renferal, Cenarius, Dragons of Nightmare and others) stayed in their first phase. | partially tested: Nythendra has energy and casts Infested Breath |
 | Dungeon and raid autobalance by player count (`AutoBalance.*` in `worldserver.conf`, off by default), visible aura 900100 "AutoBalance" (`sql/updates/hotfixes/2026_11_14_00_autobalance_aura.sql`). | built |
+| Playerbots: module system (`modules/<name>` with its own `.conf`), client-less bot sessions, `PlayerScript::OnWhisper`, LFG / loot roll / kick vote accessors (9 commits ported from [DemonCore](https://github.com/DemonCore-Legion/DemonCore)) and the [DemonCore-Playerbots](https://github.com/DemonCore-Legion/DemonCore-Playerbots) module `ab4f4b1` in `modules/mod-playerbots` (`playerbots.conf`, `.playerbots create <class> [spec]`). | built |
 
 ## Emerald Nightmare
 

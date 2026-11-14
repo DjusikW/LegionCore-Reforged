@@ -1,0 +1,442 @@
+###################################################################################################
+# mod-playerbots configuration
+#
+# Copy this file to playerbots.conf next to worldserver.conf to change a value: the .dist file
+# is read first (defaults), then playerbots.conf over it. ".reload config" reads both again.
+###################################################################################################
+
+[worldserver]
+
+#
+#    Playerbots.Enable
+#        Master switch for the playerbots module (the .playerbots GM commands).
+#        Default: 1 - (Enabled)
+#                 0 - (Disabled)
+
+Playerbots.Enable = 1
+
+#
+#    Playerbots.Summon.Revive
+#        A dead bot is revived (full health and mana) when its owner says "summon" in party or
+#        raid chat, then comes to him. Bots are never revived on their own; a whispered summon
+#        does not revive.
+#        Default: 1 - (Only while the owner is out of combat)
+#                 0 - (Never: a dead bot stays dead)
+#                 2 - (Also while the owner is in combat)
+
+Playerbots.Summon.Revive = 1
+
+#
+#    Playerbots.Combat.Log
+#        Combat lines in the server log (Server.log, "[mod-playerbots] ...").
+#        Default: 1 - (A bot engaging or stopping, and each spell it casts)
+#                 0 - (None)
+#                 2 - (Also why each rotation step was skipped: not known, condition not met,
+#                      cooldown, cast failed with the core's result... logged when the reason changes)
+
+Playerbots.Combat.Log = 1
+
+#
+#    Playerbots.Combat.EngageRange
+#        Bots fight enemies within this many yards of themselves (an "attack" order has no limit).
+#        Default: 30
+
+Playerbots.Combat.EngageRange = 30
+
+#
+#    Playerbots.Combat.EngageDelay
+#        Milliseconds a bot waits after choosing a new enemy before it attacks, so its owner
+#        swings first. Not applied to an "attack" order.
+#        Default: 1200
+
+Playerbots.Combat.EngageDelay = 1200
+
+###################################################################################################
+# Creating bots (.playerbots create <class> [spec]) and gear (autogear)
+###################################################################################################
+
+#
+#    Playerbots.Create.AccountPrefix
+#        Created bots live on accounts named <prefix>1, <prefix>2... (made when needed). At least
+#        3 characters. Bots on these accounts are never anyone's alts.
+#        Default: "PLAYERBOT"
+
+Playerbots.Create.AccountPrefix = "PLAYERBOT"
+
+#
+#    Playerbots.Create.AccountPassword
+#        Password of the bot accounts (nobody needs to log into them).
+#        Default: "playerbot"
+
+Playerbots.Create.AccountPassword = "playerbot"
+
+#
+#    Playerbots.Create.CharactersPerAccount
+#        Bot characters per bot account before the next account is made.
+#        Default: 10
+
+Playerbots.Create.CharactersPerAccount = 10
+
+#
+#    Playerbots.DeleteBotAccounts
+#        1: at the next startup, every account whose name starts with Playerbots.Create.AccountPrefix
+#        is deleted together with all its characters (for good, whatever CharDelete.Method says), and
+#        no bot pool is built that time. Then set it back to 0 and restart: the pool is built anew.
+#        Refused for a prefix shorter than 3 characters or one such as ADMIN / GM / PLAYER.
+#        Default: 0 - (Off)
+#                 1 - (Delete at the next startup)
+
+Playerbots.DeleteBotAccounts = 0
+
+#
+#    Playerbots.Create.AlliedRaceLevel
+#        Bots may be allied races (Void Elf, Lightforged Draenei, Nightborne, Highmountain Tauren):
+#        they are created and reset at this level, and ".playerbots create" picks one only for a
+#        creator of at least this level. Bot accounts are given the Legion expansion at startup,
+#        which is what the core checks to allow allied races.
+#        Default: 10
+
+Playerbots.Create.AlliedRaceLevel = 10
+
+#
+#    Playerbots.AutoGear.MinQuality
+#    Playerbots.AutoGear.MaxQuality
+#        Item qualities a created bot and the "autogear" order may pick:
+#        0 poor, 1 common, 2 uncommon, 3 rare, 4 epic, 5 legendary (artifacts and heirlooms never).
+#        Default: 0, 4
+
+Playerbots.AutoGear.MinQuality = 0
+Playerbots.AutoGear.MaxQuality = 4
+
+#
+#    Playerbots.AutoGear.MaxItemLevel
+#        Highest item level autogear picks (the bot's level still limits items by their required
+#        level). 0 = no limit.
+#        Default: 0
+
+Playerbots.AutoGear.MaxItemLevel = 0
+
+#
+#    Playerbots.AutoGear.Choices
+#        Autogear lists the best upgrades for each slot (up to this many) and puts on one of them
+#        at random, so bots of a spec do not all wear the same items. Fewer when fewer exist; only
+#        pieces better than the one worn are listed. 1 = always the best.
+#        Default: 5
+
+Playerbots.AutoGear.Choices = 5
+
+#
+#    Playerbots.AutoGear.BagEntry
+#        Before gearing, autogear puts a bag in each empty bag slot. Item entry of that bag;
+#        0 = the first that exists of Hexweave Bag (114821, 30 slots), Royal Satchel (82446),
+#        Embersilk Bag (54443), Frostweave Bag (41599).
+#        Default: 0
+
+Playerbots.AutoGear.BagEntry = 0
+
+
+#
+#    Playerbots.AutoGear.IlvlCap.*
+#        Highest item level a bot wears for its level (quest rewards often have no required level, so
+#        this is what keeps a low bot out of high gear). Autogear, equipping from the bags and need
+#        rolls all respect it; a worn piece above it is replaced by any allowed one.
+#        Below60Add: levels 1-59 may wear level + Below60Add.
+#        From 60, one item level per bracket of 5 levels (the key is the bracket's first level):
+#        roughly that level range's dungeon and quest gear (Outland, Northrend, Cataclysm,
+#        Pandaria, Draenor, Broken Isles). 0 = no cap for that bracket. At 110 only MaxItemLevel.
+#        Default: Below60Add 6, 60: 100, 65: 115, 70: 165, 75: 200, 80: 285, 85: 400, 90: 560,
+#                 95: 630, 100: 735, 105: 820
+
+Playerbots.AutoGear.IlvlCap.Below60Add = 6
+Playerbots.AutoGear.IlvlCap.60 = 100
+Playerbots.AutoGear.IlvlCap.65 = 115
+Playerbots.AutoGear.IlvlCap.70 = 165
+Playerbots.AutoGear.IlvlCap.75 = 200
+Playerbots.AutoGear.IlvlCap.80 = 285
+Playerbots.AutoGear.IlvlCap.85 = 400
+Playerbots.AutoGear.IlvlCap.90 = 560
+Playerbots.AutoGear.IlvlCap.95 = 630
+Playerbots.AutoGear.IlvlCap.100 = 735
+Playerbots.AutoGear.IlvlCap.105 = 820
+
+
+#
+#    Playerbots.Pool.Accounts
+#    Playerbots.Pool.Characters
+#    Playerbots.Pool.LoginAtStartup
+#        At startup the server makes the missing bot accounts (<AccountPrefix>1..Accounts) and bot
+#        characters (Characters in all, classes in turn, factions alternating, starting level), then
+#        logs LoginAtStartup of them in; they wait on GM Island. ".playerbots create <class>" first
+#        takes a free logged-in bot, then an offline bot character, of that class, of the GM's faction
+#        and at most his level, levels and sets it up and brings it into his party; only when there is
+#        none is a new character made. 0 turns each part off. The pool is built a few accounts,
+#        characters and logins per world update, so the first startup with a large pool keeps
+#        working while it fills (watch "Bot pool:" in the log).
+#        Default: 100, 600, 50
+
+Playerbots.Pool.Accounts = 100
+Playerbots.Pool.Characters = 600
+Playerbots.Pool.LoginAtStartup = 200
+
+###################################################################################################
+# Survival (defensive cooldowns, potions, eating and drinking)
+###################################################################################################
+
+#
+#    Playerbots.Combat.Defensives
+#        Bots use their class's defensive cooldowns (Shield Wall, Ice Block, Barkskin...) in combat
+#        when their health drops low.
+#        Default: 1 - (On)
+#                 0 - (Off)
+
+Playerbots.Combat.Defensives = 1
+
+#
+#    Playerbots.Combat.PotionHealthPct
+#    Playerbots.Combat.PotionManaPct
+#        In combat, a bot drinks a healing potion (or healthstone) from its bags at or below this
+#        health %, a mana potion at or below this mana %. Only potions the bot carries.
+#        Default: 30, 20
+
+Playerbots.Combat.PotionHealthPct = 30
+Playerbots.Combat.PotionManaPct = 20
+
+#
+#    Playerbots.Combat.PotionsOnAlts
+#        Potions are the character's own items, so alt bots (characters of a player's account)
+#        drink them only when this is on.
+#        Default: 0 - (Off)
+#                 1 - (On)
+
+Playerbots.Combat.PotionsOnAlts = 0
+
+#
+#    Playerbots.Rest.Enable
+#    Playerbots.Rest.HealthPct
+#    Playerbots.Rest.ManaPct
+#        Out of combat a bot below these health / mana % sits down and eats / drinks (food and drink
+#        of its level, no items used) until full; it stands up if a fight starts or its leader walks
+#        more than 20 yards away.
+#        Default: 1, 60, 50
+
+Playerbots.Rest.Enable = 1
+Playerbots.Rest.HealthPct = 60
+Playerbots.Rest.ManaPct = 50
+
+###################################################################################################
+# SELF-BOT, FORMATIONS, DUNGEON FINDER
+###################################################################################################
+
+#
+#    Playerbots.Self.GMOnly
+#        ".playerbots self" makes the player's own character a bot: it fights his target (and
+#        whatever attacks the group) with its spec's rotation, follows the group's leader and takes
+#        the bot orders (whisper yourself or party chat). The same command again turns it off.
+#        Default: 1 - (Game masters only)
+#                 0 - (Every player)
+
+Playerbots.Self.GMOnly = 1
+
+#
+#    Playerbots.Formation.Default
+#        The follow formation bots start with; the "formation <name>" order changes it per bot.
+#        role   - tank ahead at the leader's side, melee rear left, ranged rear right, healer behind
+#        near   - everyone close behind      line   - abreast, the leader in the middle
+#        queue  - single file                circle - evenly around the leader
+#        arrow  - rows: tanks in front, then melee, ranged, healers
+#        shield - tanks in a line in front, the others in a line behind
+#        chaos  - near, with a random offset  far    - 10 yards behind
+#        Default: "role"
+
+Playerbots.Formation.Default = "role"
+
+#
+#    Playerbots.LFG.Fill
+#    Playerbots.LFG.FillDelay
+#    Playerbots.LFG.JoinInterval
+#        A player who queues for a 5-man dungeon in the dungeon finder (alone or as his group's
+#        leader): FillDelay ms later, idle pool bots of his faction (logged in on GM Island, at most
+#        his level) take the missing roles one every JoinInterval ms: each is set up to his level in a
+#        spec of that role and queues for the same dungeons (random or specific). The delay lets other
+#        players queue first. If he leaves the queue, bots not yet in a group leave it and go back to
+#        GM Island. Party bots always answer their leader's role check by their spec.
+#        Default: 1, 30000, 2000
+
+Playerbots.LFG.Fill = 1
+Playerbots.LFG.FillDelay = 30000
+Playerbots.LFG.JoinInterval = 2000
+
+#
+#    Playerbots.BG.Fill
+#    Playerbots.BG.FillDelay
+#    Playerbots.BG.JoinInterval
+#    Playerbots.BG.BotsPerTeam
+#        A player who queues for a battleground (a specific one or the random battleground; alone or
+#        with his group): FillDelay ms later, idle pool bots of both factions (logged in on GM Island,
+#        at most his level) join the same queue one every JoinInterval ms, each set up to his level,
+#        until each team has BotsPerTeam players (0 = the battleground's maximum: 10 in Warsong Gulch,
+#        15 in Arathi Basin...) with a fixed role mix: 10% tanks and 20% healers rounded down, the
+#        rest dps (Warsong Gulch 1 / 2 / 7, Arathi Basin 1 / 3 / 11). Queued players and party bots
+#        count. While a battleground the bots fill is running, a player of that level who queues for
+#        it takes the place of a fill bot of his role (the bot leaves, the queue invites him); a team
+#        short of players for FillDelay ms with nobody waiting (a refused invitation, someone gone)
+#        gets a bot of the missing role. Bots go back to GM Island once their battleground is over.
+#        Arenas, rated battlegrounds, brawls and Ashran are not filled. Party bots always enter the
+#        battleground their leader queued the group for.
+#        Default: 1, 30000, 1000, 0
+
+Playerbots.BG.Fill = 1
+Playerbots.BG.FillDelay = 30000
+Playerbots.BG.JoinInterval = 1000
+Playerbots.BG.BotsPerTeam = 0
+
+###################################################################################################
+# LOOT ROLLS AND EQUIPPING FROM THE BAGS
+###################################################################################################
+
+#
+#    Playerbots.Loot.RandomBotsRoll
+#    Playerbots.Loot.NeedUpgradePct
+#        In group loot a bot rolls need on armor / weapons for its spec (its armor type, usable,
+#        a hand layout its spec uses) that beat the piece it wears in that slot by NeedUpgradePct
+#        % by its stat weights (the weaker ring / trinket / dual-wield hand; a two-hander against
+#        both hands); greed on everything else. RandomBotsRoll = 0: only alt bots roll, random
+#        bots pass on everything.
+#        Default: 1, 5
+
+Playerbots.Loot.RandomBotsRoll = 1
+Playerbots.Loot.NeedUpgradePct = 5
+
+#
+#    Playerbots.AutoEquip.Enable
+#    Playerbots.AutoEquip.Alts
+#    Playerbots.AutoEquip.UpgradePct
+#        An item that reaches a bot's bags by any means (loot, roll, quest, mail, vendor...) is put
+#        on if it beats the worn piece by UpgradePct % by its stat weights (same comparison as the
+#        need roll); the old piece takes its bag slot. In combat it waits for the end of the fight.
+#        Alt bots only with Alts = 1 (nothing changes an alt unless the player orders it).
+#        Default: 1, 0, 5
+
+Playerbots.AutoEquip.Enable = 1
+Playerbots.AutoEquip.Alts = 0
+Playerbots.AutoEquip.UpgradePct = 5
+
+#
+#    Playerbots.Sell.AutoGray
+#    Playerbots.Sell.AutoGrayAlts
+#        A bot standing at a vendor (within interaction range) sells its gray items at once, through
+#        the core's own sell handler (buyback, money), and whispers its master what it earned. The
+#        "sell" order (gray / vendor / <quality> [all] / item) works whatever these say. Alt bots only
+#        with AutoGrayAlts = 1 (nothing changes an alt unless the player orders it).
+#        Default: 1, 0
+
+Playerbots.Sell.AutoGray = 1
+Playerbots.Sell.AutoGrayAlts = 0
+
+###################################################################################################
+# STRATEGIES (co = combat, nc = non-combat; "co ?", "co +name,-name", "nc ?", "nc +name" orders)
+###################################################################################################
+
+#
+#    Playerbots.Strategies.Combat
+#    Playerbots.Strategies.NonCombat
+#        The strategies every bot starts with, comma separated.
+#        Combat:     aggressive (start fights with nearby enemies out of combat), passive (fight
+#                    nothing), defend (only what attacks the master or the bot), tank (tank bots
+#                    taunt), defensives, potions. aggressive / passive / defend exclude each other.
+#                    avoidaoe (step out of harmful ground effects) is always added, whatever this
+#                    list says; "co -avoidaoe" turns it off for one bot.
+#        Non-combat: follow (off = stay), loot (loot our kills' corpses; alt bots only by order),
+#                    rest (eat and drink), roll (need / greed on group loot; off = pass),
+#                    autoequip (bag upgrades), talents (fill empty talent rows).
+#        Default: "tank,defensives,potions", "follow,loot,rest,roll,autoequip,talents"
+
+Playerbots.Strategies.Combat = "tank,defensives,potions"
+Playerbots.Strategies.NonCombat = "follow,loot,rest,roll,autoequip,talents"
+
+#
+#    Playerbots.AvoidAoe.MaxRadius
+#        In a fight, bots step out of harmful ground effects (mod-playerbots' "avoid aoe"): enemy
+#        puddles and auras from dynamic objects, area triggers, damaging traps and invisible
+#        trigger creatures. Effects wider than this many yards are not avoided (they cover the room).
+#        Default: 15
+
+Playerbots.AvoidAoe.MaxRadius = 15
+
+#
+#    Playerbots.AvoidAoe.MaxStep
+#        Longest single step out of a ground effect, in yards.
+#        Default: 8
+
+Playerbots.AvoidAoe.MaxStep = 8
+
+#
+#    Playerbots.AvoidAoe.Whitelist
+#        Spell ids bots never step out of (soak mechanics, effects meant to be stood in), comma separated.
+#        Default: ""
+
+Playerbots.AvoidAoe.Whitelist = ""
+
+#
+#    Playerbots.AvoidAoe.Tell
+#        1 = a bot whispers its master "I'm avoiding <spell>." (at most every 10 seconds).
+#        Default: 0
+
+Playerbots.AvoidAoe.Tell = 0
+
+#
+#    Playerbots.Trade.Enable
+#        1 = bots trade (AzerothCore's "t" / "trade" order, and the answer to a trade): a trade opened by the
+#        bot's owner or a group member is begun and accepted once the other side accepts; anyone else is
+#        turned down. "t <items> [count] [money]" makes the bot open a trade with its owner and put them in.
+#        "c [filter]" (bag inspection) works either way.
+#        Default: 1
+
+Playerbots.Trade.Enable = 1
+
+#
+#    Playerbots.Aggressive.Range
+#    Playerbots.Aggressive.MaxLevelAbove
+#        co aggressive: out of combat, the bot attacks the nearest hostile creature within Range
+#        yards (in sight, not tapped by others, no critters or civilians) at most MaxLevelAbove
+#        levels above it. In combat it only helps with what already attacks the group.
+#        Default: 25, 6
+
+Playerbots.Aggressive.Range = 25
+Playerbots.Aggressive.MaxLevelAbove = 6
+
+#
+#    Playerbots.Loot.MinQuality
+#    Playerbots.Loot.Range
+#        nc loot: out of combat the bot walks to corpses within Range yards that it or its group
+#        may loot, takes the gold, quest items, currencies, and items of at least MinQuality:
+#        0 = all (poor and up), 1 = common, 2 = uncommon, 3 = rare, 4 = epic.
+#        Default: 0, 30
+
+Playerbots.Loot.MinQuality = 0
+Playerbots.Loot.Range = 30
+
+###################################################################################################
+# ROTATIONS (SimulationCraft action lists)
+###################################################################################################
+
+#
+#    Playerbots.Rotation.SimC
+#        1: specs with a SimulationCraft profile (the T21 default profile of 28 specs, built into
+#        the module) fight with its action list and take its talents; the other specs (most
+#        healers, Protection Warrior, Vengeance) keep the module's own lists. 0: every spec uses
+#        the module's own lists. Artifact conditions count as learned, gear and set bonus ones as
+#        absent. At startup each profile logs what it could not resolve.
+#        Default: 1
+
+Playerbots.Rotation.SimC = 1
+
+#
+#    Playerbots.Rotation.Directory
+#        A folder (relative to the worldserver's working folder, or absolute) whose .simc files
+#        replace the built-in profile of their spec at startup: the module's own apl/*.simc files
+#        (spec_id= line) or plain SimulationCraft profiles (class and spec= lines). Missing folder =
+#        built-in profiles only.
+#        Default: "playerbots_apl"
+
+Playerbots.Rotation.Directory = "playerbots_apl"
