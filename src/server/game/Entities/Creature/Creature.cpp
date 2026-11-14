@@ -2019,6 +2019,16 @@ void Creature::SelectLevel(const CreatureTemplate* cInfo)
         case CLASS_MAGE:
             SetMaxPower(POWER_MANA, mana);
             SetFullPower(POWER_MANA);
+            break;
+        case CLASS_ROGUE:
+            // Nothing else ever set UNIT_FIELD_DISPLAY_POWER for creatures, so it stayed 0 (mana) and
+            // Creature::GetPowerIndex(POWER_ENERGY) returned MAX_POWERS: SetPower/GetPower(POWER_ENERGY)
+            // were silent no-ops returning 0 and every energy-cost spell failed CheckPower.
+            // Boss scripts (Nythendra, Elerethe, Cenarius, Nightmare dragons...) rely on energy of rogue-class creatures.
+            // SetPowerType -> UpdateMaxPower sets max energy from PowerType.db2 (100); SetSpawnHealth sets the initial value.
+            SetPowerType(POWER_ENERGY);
+            UpdateMaxPower(POWER_ENERGY); // SetPowerType returns early when the type is already set
+            break;
         default: // We don't set max power here, 0 makes power bar hidden
             break;
     }
