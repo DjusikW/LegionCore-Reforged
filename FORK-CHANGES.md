@@ -29,6 +29,7 @@ Status: **tested** — checked in game; **built** — compiles, not tested in ga
 | Change | Status |
 |---|---|
 | DB (`sql/updates/world/2026_11_14_02_quest_item_loot_from_cata.sql`): 615 quest items that dropped nowhere get their loot from the Cataclysm 4.3.4 world DB (TDB 434.22011, The Cataclysm Preservation Project): 4487 creature, 125 gameobject and 93 container loot rows; 613 creatures without a loot table point at their own entry. New rows only. Quests 1–60 with an item that can't be obtained: 1083 → 48. | applied to DB, not tested in game |
+| DB (`sql/updates/world/2026_11_14_03_quest_objectives_from_cata.sql`): 16 quests that the 7.3.5 client knows had no objectives at all and could be turned in without doing anything; objectives taken from the Cataclysm 4.3.4 world DB (19 rows, custom objective IDs 16000000 + quest × 10 + index). | applied to DB, not tested in game |
 
 ## Known issues
 
