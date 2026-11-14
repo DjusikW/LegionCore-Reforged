@@ -1,0 +1,37 @@
+-- Portions Copyright (C) 2026 DjusikW <https://github.com/DjusikW>
+-- Quests absent from the 7.3.5 client (QuestV2.db2) that NPCs still offered, with no objectives
+-- (mount exchanges, pre-Legion class quests, Anthion/Atiesh variants). Disable them (sourceType 1 = quest).
+DELETE FROM disables WHERE sourceType=1 AND entry IN (6546,7660,7661,7662,7663,7673,7674,7677,7678,8952,8953,8954,8955,8956,8957,8958,8959,9016,9017,9019,9020,9021,9022,9185,9269,9271,10496,10497,14418,14419,24531,26945);
+INSERT INTO disables (sourceType, entry, flags, params_0, params_1, comment) VALUES
+(1,6546,0,'','','Removed from the game - Warsong Outrider Update'),
+(1,7660,0,'','','Removed from the game - Wolf Swapping - Arctic Wolf'),
+(1,7661,0,'','','Removed from the game - Wolf Swapping - Red Wolf'),
+(1,7662,0,'','','Removed from the game - New Kodo - Teal'),
+(1,7663,0,'','','Removed from the game - New Kodo - Green'),
+(1,7673,0,'','','Removed from the game - Frost Ram Exchange'),
+(1,7674,0,'','','Removed from the game - Black Ram Exchange'),
+(1,7677,0,'','','Removed from the game - White Stallion Exchange'),
+(1,7678,0,'','','Removed from the game - Palomino Exchange'),
+(1,8952,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,8953,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,8954,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,8955,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,8956,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,8957,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,8958,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,8959,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,9016,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,9017,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,9019,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,9020,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,9021,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,9022,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,9185,0,'','','Removed from the game - Craftsman\'s Writ - Rugged Armor Kit'),
+(1,9269,0,'','','Removed from the game - Atiesh, Greatstaff of the Guardian'),
+(1,9271,0,'','','Removed from the game - Atiesh, Greatstaff of the Guardian'),
+(1,10496,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,10497,0,'','','Removed from the game - Anthion\'s Parting Words'),
+(1,14418,0,'','','Removed from the game - The Deathstalkers'),
+(1,14419,0,'','','Removed from the game - The Deathstalkers'),
+(1,24531,0,'','','Removed from the game - Подготовка к битве'),
+(1,26945,0,'','','Removed from the game - Новые приемы');
