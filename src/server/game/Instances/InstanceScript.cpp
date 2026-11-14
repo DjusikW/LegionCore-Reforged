@@ -326,6 +326,9 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
         bossInfo->state = state;
         SaveToDB();
 
+        if (state == DONE)
+            sScriptMgr->OnInstanceBossDone(instance, id);
+
         for (auto & type : bossInfo->door)
             for (auto i : type)
                 UpdateDoorState(i);

@@ -2147,6 +2147,11 @@ void ScriptMgr::OnCreatureDeath(Creature* killed, Unit* killer)
     FOREACH_SCRIPT(PlayerScript)->OnCreatureDeath(killed, killer);
 }
 
+void ScriptMgr::OnInstanceBossDone(InstanceMap* map, uint32 bossId)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnInstanceBossDone(map, bossId);
+}
+
 bool ScriptMgr::CanPlayerEnterMap(Player* player, MapEntry const* map, bool notify)
 {
     FOR_SCRIPTS_RET(PlayerScript, itr, end, true)

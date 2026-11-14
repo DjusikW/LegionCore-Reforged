@@ -639,6 +639,10 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a creature is killed by any unit (Unit::Kill): a pet, a totem, a script or a player
         virtual void OnCreatureDeath(Creature* /*killed*/, Unit* /*killer*/) { }
 
+        // Called when an instance script sets a boss to DONE (InstanceScript::SetBossState), also for
+        // encounters that end without a creature death (Madness of Deathwing)
+        virtual void OnInstanceBossDone(InstanceMap* /*map*/, uint32 /*bossId*/) { }
+
         // Called before a player enters a map (teleport, area trigger, login inside an instance; GMs excluded).
         // Return false to refuse; notify: the script may tell the player why.
         virtual bool CanEnterMap(Player* /*player*/, MapEntry const* /*map*/, bool /*notify*/) { return true; }
@@ -1034,6 +1038,7 @@ class TC_GAME_API ScriptMgr
         void OnQuestAbandon(Player* player, Quest const* quest);
         void OnCreatureKill(Player* killer, Creature* killed);
         void OnCreatureDeath(Creature* killed, Unit* killer);
+        void OnInstanceBossDone(InstanceMap* map, uint32 bossId);
         bool CanPlayerEnterMap(Player* player, MapEntry const* map, bool notify);
         bool CanPlayerTakeQuest(Player* player, Quest const* quest, bool msg);
         bool CanCreateCharacter(WorldSession* session, uint8 race, uint8 playerClass);
