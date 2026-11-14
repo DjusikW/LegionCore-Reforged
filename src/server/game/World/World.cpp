@@ -2,6 +2,8 @@
 ///                                      ///
 ///         LEGIONCORE REFORGED          ///
 ///    Copyright 2026 Titans-Project     ///
+///   Portions Copyright 2026 DjusikW    ///
+///     <https://github.com/DjusikW>     ///
 ///         All Rights Reserved.         ///
 ///                                      ///
 ///      Based on TrinityCore code       ///
@@ -1514,6 +1516,8 @@ void World::LoadConfigSettings(bool reload)
     m_float_configs[CONFIG_AUTOBALANCE_MIN_DAMAGE_MOD] = sConfigMgr->GetFloatDefault("AutoBalance.MinDamageModifier", 0.01f);
     m_float_configs[CONFIG_AUTOBALANCE_MIN_ARMOR_MOD] = sConfigMgr->GetFloatDefault("AutoBalance.MinArmorModifier", 0.01f);
     m_float_configs[CONFIG_AUTOBALANCE_MIN_MANA_MOD] = sConfigMgr->GetFloatDefault("AutoBalance.MinManaModifier", 0.01f);
+    if (m_bool_configs[CONFIG_AUTOBALANCE_ENABLE])
+        TC_LOG_INFO("server.loading", "AutoBalance enabled, minimum %u player(s) (djw-ab rev. 2611)", m_int_configs[CONFIG_AUTOBALANCE_MIN_PLAYERS]);
 
     m_bool_configs[CONFIG_WORLD_QUEST] = sConfigMgr->GetBoolDefault("WorldQuest", true);
     m_int_configs[CONFIG_WORLD_QUEST_RESET_TIME_HOUR]  = sConfigMgr->GetIntDefault("WorldQuest.ResetTimeHour", 4);

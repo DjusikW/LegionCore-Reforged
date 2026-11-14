@@ -1,3 +1,4 @@
+-- Portions Copyright (C) 2026 DjusikW <https://github.com/DjusikW>
 -- AutoBalance: visible aura "Автобаланс" (spell 900100) on creatures scaled by the core.
 -- The stack count shows the number of players the creature is balanced for.
 -- Effect amount = stack count (base points 1), sent to the client (SPELL_ATTR8_AURA_SEND_AMOUNT) for $w1 in the tooltip.
@@ -6,11 +7,11 @@
 
 DELETE FROM spell WHERE ID = 900100;
 INSERT INTO spell (ID, Name, NameSubtext, Description, AuraDescription, VerifiedBuild) VALUES
-(900100, 'Автобаланс', '', 'Сила существа подстроена под число игроков в подземелье или рейде.', 'Сила подстроена под число игроков: $w1.', 0);
+(900100, 'Автобаланс', '', 'Сила существа подстроена под число игроков в подземелье или рейде.', 'Сила подстроена под число игроков: $w1. Чем меньше игроков, тем слабее противник.', 0);
 
 DELETE FROM spell_locale WHERE ID = 900100;
 INSERT INTO spell_locale (ID, locale, Name_lang, NameSubtext_lang, Description_lang, AuraDescription_lang, VerifiedBuild) VALUES
-(900100, 'ruRU', 'Автобаланс', '', 'Сила существа подстроена под число игроков в подземелье или рейде.', 'Сила подстроена под число игроков: $w1.', 0);
+(900100, 'ruRU', 'Автобаланс', '', 'Сила существа подстроена под число игроков в подземелье или рейде.', 'Сила подстроена под число игроков: $w1. Чем меньше игроков, тем слабее противник.', 0);
 
 DELETE FROM spell_misc WHERE ID = 900100 OR SpellID = 900100;
 INSERT INTO spell_misc (ID, CastingTimeIndex, DurationIndex, RangeIndex, SchoolMask, SpellIconFileDataID, Speed, ActiveIconFileDataID, LaunchDelay, DifficultyID,

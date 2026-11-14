@@ -2,6 +2,8 @@
 ///                                      ///
 ///         LEGIONCORE REFORGED          ///
 ///    Copyright 2026 Titans-Project     ///
+///   Portions Copyright 2026 DjusikW    ///
+///     <https://github.com/DjusikW>     ///
 ///         All Rights Reserved.         ///
 ///                                      ///
 ///      Based on TrinityCore code       ///

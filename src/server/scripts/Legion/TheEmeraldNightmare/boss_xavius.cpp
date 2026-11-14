@@ -1,3 +1,5 @@
+// Portions Copyright (C) 2026 DjusikW <https://github.com/DjusikW>
+
 #include "the_emerald_nightmare.h"
 
 enum Says

@@ -1,3 +1,5 @@
+// Portions Copyright (C) 2026 DjusikW <https://github.com/DjusikW>
+
 /*
     TODO: Нехватает инфы по евентам с суммонами, сколько суммонится и когда по времени.
 */

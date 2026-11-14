@@ -1,3 +1,4 @@
+-- Portions Copyright (C) 2026 DjusikW <https://github.com/DjusikW>
 -- Emerald Nightmare: Drake's Fury (113203, invisible stalkers under the Nightmare Drakes) cast their
 -- periodic "Drake's Wrath" aura 225324 only once after spawn (event_flags 1 = NOT_REPEATABLE),
 -- so the ground strikes stopped shortly after the instance loaded. Repeat every 5-6 s.
