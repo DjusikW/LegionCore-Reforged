@@ -2122,6 +2122,11 @@ void ScriptMgr::OnCreatureKill(Player* killer, Creature* killed)
     FOREACH_SCRIPT(PlayerScript)->OnCreatureKill(killer, killed);
 }
 
+void ScriptMgr::OnCreatureDeath(Creature* killed, Unit* killer)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnCreatureDeath(killed, killer);
+}
+
 void ScriptMgr::OnPlayerKilledByCreature(Creature* killer, Player* killed)
 {
     FOREACH_SCRIPT(PlayerScript)->OnPlayerKilledByCreature(killer, killed);

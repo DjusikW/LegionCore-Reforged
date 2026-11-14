@@ -614,6 +614,9 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a player kills a creature
         virtual void OnCreatureKill(Player* /*killer*/, Creature* /*killed*/) { }
 
+        // Called when a creature is killed by any unit (Unit::Kill): a pet, a totem, a script or a player
+        virtual void OnCreatureDeath(Creature* /*killed*/, Unit* /*killer*/) { }
+
         // Called when a player is killed by a creature
         virtual void OnPlayerKilledByCreature(Creature* /*killer*/, Player* /*killed*/) { }
 
@@ -992,6 +995,7 @@ class TC_GAME_API ScriptMgr
         void OnQuestComplete(Player* player, const Quest* quest);
         void OnQuestAbandon(Player* player, Quest const* quest);
         void OnCreatureKill(Player* killer, Creature* killed);
+        void OnCreatureDeath(Creature* killed, Unit* killer);
         void OnPlayerKilledByCreature(Creature* killer, Player* killed);
         void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
         void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);

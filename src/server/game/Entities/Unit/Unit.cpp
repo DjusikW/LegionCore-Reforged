@@ -22497,6 +22497,9 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
             sScriptMgr->OnPlayerKilledByCreature(killerCre, killed);
     }
 
+    if (Creature* killedCre = victim->ToCreature())
+        sScriptMgr->OnCreatureDeath(killedCre, this);
+
     victim->m_IsInKillingProcess = false;
 }
 
