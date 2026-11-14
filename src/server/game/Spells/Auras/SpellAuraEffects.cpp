@@ -7946,7 +7946,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     else
         damage = uint32(target->CountPctFromMaxHealth(static_cast<int32>(damage)));
 
-    damage = uint32(damage * caster->GetAutoBalanceDamageMod(target)); // AutoBalance
+    sScriptMgr->ModifyPeriodicDamageAurasTick(target, caster, damage, m_spellInfo);
 
     if (!(GetSpellInfo()->HasAttribute(SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)) && GetAuraType() != SPELL_AURA_PERIODIC_DAMAGE)
     {

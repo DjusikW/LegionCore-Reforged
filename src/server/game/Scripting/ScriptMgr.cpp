@@ -1369,6 +1369,26 @@ void ScriptMgr::OnShutdownCancel()
     FOREACH_SCRIPT(WorldScript)->OnShutdownCancel();
 }
 
+void ScriptMgr::OnCreatureUpdate(Creature* creature, uint32 diff)
+{
+    FOREACH_SCRIPT(UnitScript)->OnCreatureUpdate(creature, diff);
+}
+
+void ScriptMgr::ModifyMeleeDamage(Unit* target, Unit* attacker, uint32& damage)
+{
+    FOREACH_SCRIPT(UnitScript)->ModifyMeleeDamage(target, attacker, damage);
+}
+
+void ScriptMgr::ModifySpellDamageTaken(Unit* target, Unit* attacker, float& damage, SpellInfo const* spellInfo)
+{
+    FOREACH_SCRIPT(UnitScript)->ModifySpellDamageTaken(target, attacker, damage, spellInfo);
+}
+
+void ScriptMgr::ModifyPeriodicDamageAurasTick(Unit* target, Unit* attacker, uint32& damage, SpellInfo const* spellInfo)
+{
+    FOREACH_SCRIPT(UnitScript)->ModifyPeriodicDamageAurasTick(target, attacker, damage, spellInfo);
+}
+
 void ScriptMgr::OnHonorCalculation(float& honor, uint8 level, float multiplier)
 {
     FOREACH_SCRIPT(FormulaScript)->OnHonorCalculation(honor, level, multiplier);
@@ -2427,6 +2447,11 @@ WorldScript::WorldScript(std::string name) : ScriptObject(name)
     ScriptRegistry<WorldScript>::Instance()->AddScript(this);
 }
 
+UnitScript::UnitScript(std::string name) : ScriptObject(name)
+{
+    ScriptRegistry<UnitScript>::Instance()->AddScript(this);
+}
+
 FormulaScript::FormulaScript(std::string name) : ScriptObject(name)
 {
     ScriptRegistry<FormulaScript>::Instance()->AddScript(this);
@@ -2661,6 +2686,7 @@ template class TC_GAME_API ScriptRegistry<SceneTriggerScript>;
 template class TC_GAME_API ScriptRegistry<SessionScript>;
 template class TC_GAME_API ScriptRegistry<SpellScriptLoader>;
 template class TC_GAME_API ScriptRegistry<TransportScript>;
+template class TC_GAME_API ScriptRegistry<UnitScript>;
 template class TC_GAME_API ScriptRegistry<VehicleScript>;
 template class TC_GAME_API ScriptRegistry<WeatherScript>;
 template class TC_GAME_API ScriptRegistry<WorldMapScript>;

@@ -2143,20 +2143,6 @@ void Unit::CastSpellDelay(Position pos, uint32 spellId, bool triggered, uint32 d
     }
 }
 
-float Unit::GetAutoBalanceDamageMod() const
-{
-    if (Creature const* creature = ToCreature())
-        return creature->GetAutoBalanceDamageMod();
-    return 1.0f;
-}
-
-float Unit::GetAutoBalanceDamageMod(Unit const* victim) const
-{
-    if (!victim || !victim->GetCharmerOrOwnerPlayerOrPlayerItself())
-        return 1.0f;
-    return GetAutoBalanceDamageMod();
-}
-
 float Unit::GetDamageVariance()
 {
     uint32 const pct = sWorld->getIntConfig(CONFIG_DAMAGE_VARIANCE_PCT);
@@ -2179,9 +2165,8 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, float dama
     if (damage > 0)
         damage *= Unit::GetDamageVariance();
 
-    // AutoBalance: creatures of dungeons and raids scaled to the number of players
     if (damage > 0 && damageInfo->attacker)
-        damage *= damageInfo->attacker->GetAutoBalanceDamageMod(victim);
+        sScriptMgr->ModifySpellDamageTaken(victim, damageInfo->attacker, damage, spellInfo);
 
     SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
 
@@ -2352,7 +2337,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
 
     // Add melee damage bonus
     damage = MeleeDamageBonusDone(damageInfo->target, damage, damageInfo->attackType);
-    damage = uint32(damage * GetAutoBalanceDamageMod(damageInfo->target)); // AutoBalance
+    sScriptMgr->ModifyMeleeDamage(damageInfo->target, this, damage);
     damageInfo->damageBeforeHit = damage;
     damage = damageInfo->target->MeleeDamageBonusTaken(this, damage, damageInfo->attackType);
 

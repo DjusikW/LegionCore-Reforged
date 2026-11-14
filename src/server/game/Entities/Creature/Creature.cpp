@@ -49,6 +49,7 @@
 #include "QuestData.h"
 #include "QuestDef.h"
 #include "ScenarioMgr.h"
+#include "ScriptMgr.h"
 #include "SpellAuraEffects.h"
 #include "SpellMgr.h"
 #include "Util.h"
@@ -1187,32 +1188,15 @@ void Creature::Update(uint32 diff)
             {
                 if (GetMap()->GetSpawnMode() != GetSpawnMode())
                     UpdateStat();
-                else
+                else if (GetMap()->IsNeedRecalc() && GetMap()->GetPlayersCountExceptGMs() > GetMap()->GetMinPlayer() && GetMap()->GetPlayersCountExceptGMs() != GetPlayerCount()) //For dynamic stats
                 {
-                    bool recalc = false;
-                    if (GetMap()->IsNeedRecalc() && GetMap()->GetPlayersCountExceptGMs() > GetMap()->GetMinPlayer() && GetMap()->GetPlayersCountExceptGMs() != GetPlayerCount()) //For dynamic stats
-                    {
-                        m_playerCount = GetMap()->GetPlayersCountExceptGMs();
-                        recalc = true;
-                    }
-
-                    // AutoBalance: the number of players changed, or the scaling was switched off by a config reload
-                    if (sWorld->getBoolConfig(CONFIG_AUTOBALANCE_ENABLE) ? (GetMap()->GetPlayersCountExceptGMs() != m_autoBalancePlayerCount || m_autoBalanceGeneration != sWorld->getIntConfig(CONFIG_AUTOBALANCE_GENERATION))
-                        : (m_autoBalanceDamageMod != 1.0f || m_autoBalanceAppliedHealthMod != 1.0f || m_autoBalanceArmorMod != 1.0f || m_autoBalanceAppliedManaMod != 1.0f))
-                        recalc = true;
-
-                    if (recalc)
-                    {
-                        UpdateMaxHealth(); // calls UpdateAutoBalance() in instances
-                        UpdateAttackPowerAndDamage();
-                        UpdateArmor();
-                        UpdateMaxPower(POWER_MANA);
-                    }
-
-                    if (m_autoBalanceAuraStacks || m_autoBalanceAuraApplied)
-                        UpdateAutoBalanceAura();
+                    m_playerCount = GetMap()->GetPlayersCountExceptGMs();
+                    UpdateMaxHealth();
+                    UpdateAttackPowerAndDamage();
                 }
             }
+
+            sScriptMgr->OnCreatureUpdate(this, diff);
 
             if (m_respawnCombatDelay)
             {
@@ -2279,131 +2263,25 @@ float Creature::_GetHealthModPersonal(uint32 &count)
     return 0.0f;
 }
 
-// AutoBalance: weakens creatures of dungeons and raids when there are fewer players than the difficulty is tuned for,
-// along the same tanh curve as AzerothCore mod-autobalance. Flexible raids are tuned for their minimum size (above it
-// the core already adds health per player), the other difficulties for their maximum size.
-void Creature::UpdateAutoBalance()
+// Stat multipliers set by scripts and modules (UnitScript). Health, armor and mana are re-applied at once;
+// the current health and mana keep their percentage.
+void Creature::SetStatModifiers(CreatureStatModifiers const& mods)
 {
-    Map* map = GetMap();
-    uint32 realCount = map ? map->GetPlayersCountExceptGMs() : 0;
-    m_autoBalancePlayerCount = realCount;
-    m_autoBalanceGeneration = sWorld->getIntConfig(CONFIG_AUTOBALANCE_GENERATION);
-    m_autoBalanceHealthMod = 1.0f;
-    m_autoBalanceDamageMod = 1.0f;
-    m_autoBalanceArmorMod = 1.0f;
-    m_autoBalanceManaMod = 1.0f;
-    m_autoBalanceAuraStacks = 0;
-
-    if (!sWorld->getBoolConfig(CONFIG_AUTOBALANCE_ENABLE) || !map || !map->Instanceable() || !map->IsDungeon() || map->IsScenario())
+    if (mods == m_statModifiers)
         return;
 
-    bool raid = map->IsRaid();
-    bool heroic = map->IsHeroic();
-    switch (map->GetDifficultyID())
-    {
-        case DIFFICULTY_HEROIC:
-        case DIFFICULTY_MYTHIC_DUNGEON:
-        case DIFFICULTY_MYTHIC_KEYSTONE:
-        case DIFFICULTY_HEROIC_RAID:
-        case DIFFICULTY_MYTHIC_RAID:
-        case DIFFICULTY_10_HC:
-        case DIFFICULTY_25_HC:
-            heroic = true;
-            break;
-        default:
-            break;
-    }
+    bool health = mods.Health != m_statModifiers.Health;
+    bool armor = mods.Armor != m_statModifiers.Armor;
+    bool mana = mods.Mana != m_statModifiers.Mana;
+    m_statModifiers = mods;
 
-    WorldBoolConfigs enableConfig = raid ? (heroic ? CONFIG_AUTOBALANCE_ENABLE_RAID_HEROIC : CONFIG_AUTOBALANCE_ENABLE_RAID)
-        : (heroic ? CONFIG_AUTOBALANCE_ENABLE_DUNGEON_HEROIC : CONFIG_AUTOBALANCE_ENABLE_DUNGEON);
-    if (!sWorld->getBoolConfig(enableConfig))
-        return;
-
-    // pets, guardians and totems of the players keep their own stats
-    if (isPet() || isTotem() || GetCharmerOrOwnerPlayerOrPlayerItself())
-        return;
-
-    uint32 tuned = (raid && map->IsNeedRecalc()) ? map->GetMinPlayer() : map->GetMaxPlayer();
-    if (!tuned)
-        return;
-
-    uint32 category = raid ? (heroic ? AUTOBALANCE_CATEGORY_RAID_HEROIC : AUTOBALANCE_CATEGORY_RAID)
-        : (heroic ? AUTOBALANCE_CATEGORY_DUNGEON_HEROIC : AUTOBALANCE_CATEGORY_DUNGEON);
-    auto config = [category](uint32 field) -> float
-    {
-        return sWorld->getFloatConfig(WorldFloatConfigs(CONFIG_AUTOBALANCE_DUNGEON_INFLECTION + category * AUTOBALANCE_FIELD_COUNT + field));
-    };
-
-    bool boss = IsDungeonBoss() || GetCreatureTemplate()->Classification == CREATURE_CLASSIFICATION_WORLDBOSS;
-
-    float curve = 1.0f;
-    uint32 count = std::max(realCount, sWorld->getIntConfig(CONFIG_AUTOBALANCE_MIN_PLAYERS));
-    if (count < tuned)
-    {
-        float inflection = config(AUTOBALANCE_FIELD_INFLECTION);
-        if (boss)
-            inflection *= config(AUTOBALANCE_FIELD_BOSS_INFLECTION);
-
-        float inflectionValue = float(tuned) * inflection;
-        float diff = float(tuned) / 5.0f * 1.5f;
-        curve = (std::tanh((float(count) - inflectionValue) / diff) + 1.0f) / 2.0f;
-    }
-
-    m_autoBalanceHealthMod = std::max(curve * config(boss ? AUTOBALANCE_FIELD_BOSS_HEALTH : AUTOBALANCE_FIELD_HEALTH), sWorld->getFloatConfig(CONFIG_AUTOBALANCE_MIN_HEALTH_MOD));
-    m_autoBalanceDamageMod = std::max(curve * config(boss ? AUTOBALANCE_FIELD_BOSS_DAMAGE : AUTOBALANCE_FIELD_DAMAGE), sWorld->getFloatConfig(CONFIG_AUTOBALANCE_MIN_DAMAGE_MOD));
-    m_autoBalanceArmorMod = std::max(curve * config(boss ? AUTOBALANCE_FIELD_BOSS_ARMOR : AUTOBALANCE_FIELD_ARMOR), sWorld->getFloatConfig(CONFIG_AUTOBALANCE_MIN_ARMOR_MOD));
-    m_autoBalanceManaMod = std::max(curve * config(boss ? AUTOBALANCE_FIELD_BOSS_MANA : AUTOBALANCE_FIELD_MANA), sWorld->getFloatConfig(CONFIG_AUTOBALANCE_MIN_MANA_MOD));
-
-    if (sWorld->getBoolConfig(CONFIG_AUTOBALANCE_SHOW_AURA))
-        m_autoBalanceAuraStacks = uint8(std::min<uint32>(count, 255));
+    if (health)
+        UpdateMaxHealth();
+    if (armor)
+        UpdateArmor();
+    if (mana)
+        UpdateMaxPower(POWER_MANA);
 }
-
-// AutoBalance: the visible aura "Автобаланс" (hotfix spell 900100), its stack count is the number of players
-// the creature is balanced for. Kept in sync from Creature::Update, as evade and other effects remove auras.
-void Creature::UpdateAutoBalanceAura()
-{
-    static uint32 const SPELL_AUTOBALANCE_AURA = 900100;
-
-    if (!m_autoBalanceAuraStacks)
-    {
-        if (m_autoBalanceAuraApplied)
-        {
-            RemoveAurasDueToSpell(SPELL_AUTOBALANCE_AURA);
-            m_autoBalanceAuraApplied = false;
-        }
-        return;
-    }
-
-    if (m_autoBalanceAuraBlocked || !IsInWorld())
-        return;
-
-    Aura* aura = GetAura(SPELL_AUTOBALANCE_AURA);
-    if (!aura)
-    {
-        if (!sSpellMgr->GetSpellInfo(SPELL_AUTOBALANCE_AURA))
-        {
-            m_autoBalanceAuraBlocked = true;
-            return;
-        }
-
-        aura = AddAura(SPELL_AUTOBALANCE_AURA, this);
-        if (!aura)
-        {
-            m_autoBalanceAuraBlocked = true;
-            return;
-        }
-    }
-
-    m_autoBalanceAuraApplied = true;
-    if (aura->GetStackAmount() != m_autoBalanceAuraStacks)
-        aura->SetStackAmount(m_autoBalanceAuraStacks);
-
-    // the effect amount is the number shown by $w1 in the tooltip (the icon shows no count for a single stack)
-    if (AuraEffect* effect = aura->GetEffect(EFFECT_0))
-        if (int32(effect->GetAmount()) != int32(m_autoBalanceAuraStacks))
-            effect->ChangeAmount(float(m_autoBalanceAuraStacks));
-}
-
 float Creature::_GetDamageMod(int32 Rank)
 {
     switch (Rank)                                           // define rates for each elite rank

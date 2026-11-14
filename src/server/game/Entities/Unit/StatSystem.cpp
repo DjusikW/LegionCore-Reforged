@@ -1882,7 +1882,7 @@ void Creature::UpdateResistances(uint32 school)
 
 void Creature::UpdateArmor()
 {
-    SetArmor(int32(GetTotalAuraModValue(UNIT_MOD_ARMOR) * m_autoBalanceArmorMod)); // AutoBalance (1.0 while it is off)
+    SetArmor(int32(GetTotalAuraModValue(UNIT_MOD_ARMOR) * m_statModifiers.Armor)); // set by scripts, 1.0 - untouched
 }
 
 void Creature::UpdateMaxHealth()
@@ -1890,6 +1890,12 @@ void Creature::UpdateMaxHealth()
     float value = GetTotalAuraModValue(UNIT_MOD_HEALTH);
     float mod = 1.0f;
     float percHealth = GetHealthPct();
+
+    // multiplier set by scripts (CreatureStatModifiers), 1.0 - untouched
+    float scriptMod = m_statModifiers.Health;
+    bool scriptModChanged = scriptMod != 1.0f || m_appliedHealthModifier != 1.0f;
+    m_appliedHealthModifier = scriptMod;
+
     if (!GetMap()->Instanceable())
     {
         auto count = GetSizeSaveThreat();
@@ -1898,33 +1904,25 @@ void Creature::UpdateMaxHealth()
             mod += _GetHealthModPersonal(count) * count;
             value *= mod;
         }
-            
-        SetMaxHealth(uint64(value));
 
-        if (IsPersonal() && count)
+        if (scriptModChanged)
+            SetMaxHealth(std::max<uint64>(1, static_cast<uint64>(value * scriptMod)));
+        else
+            SetMaxHealth(uint64(value));
+
+        if ((IsPersonal() && count) || scriptModChanged)
             SetHealth(CalculatePct(GetMaxHealth(), percHealth));
         return;
     }
 
-    // AutoBalance: scaling to the actual number of players (1.0 while it is off)
-    float oldArmorMod = m_autoBalanceArmorMod;
-    UpdateAutoBalance();
-    if (oldArmorMod != m_autoBalanceArmorMod)
-        UpdateArmor();
-    if (m_autoBalanceAppliedManaMod != m_autoBalanceManaMod)
-        UpdateMaxPower(POWER_MANA);
-    float autoBalanceMod = GetAutoBalanceHealthMod();
-    bool autoBalanceChanged = autoBalanceMod != 1.0f || m_autoBalanceAppliedHealthMod != 1.0f;
-    m_autoBalanceAppliedHealthMod = autoBalanceMod;
-
     if (GetMap()->IsNeedRecalc())
     {
         auto count = GetPlayerCount();
-        if (count || autoBalanceChanged)
+        if (count || scriptModChanged)
         {
             if (count)
                 mod += _GetHealthModPersonal(count) * count;
-            value *= mod * autoBalanceMod;
+            value *= mod * scriptMod;
 
             SetMaxHealth(std::max<uint64>(1, static_cast<uint64>(value)));
             SetHealth(CalculatePct(GetMaxHealth(), percHealth));
@@ -1932,9 +1930,9 @@ void Creature::UpdateMaxHealth()
         return;
     }
 
-    if (autoBalanceChanged)
+    if (scriptModChanged)
     {
-        SetMaxHealth(std::max<uint64>(1, static_cast<uint64>(value * autoBalanceMod)));
+        SetMaxHealth(std::max<uint64>(1, static_cast<uint64>(value * scriptMod)));
         SetHealth(CalculatePct(GetMaxHealth(), percHealth));
         return;
     }
@@ -1957,7 +1955,7 @@ void Creature::UpdateMaxPower(Powers power)
     if (GetPowerIndex(power) == MAX_POWERS)
     {
         if (power == POWER_MANA)
-            m_autoBalanceAppliedManaMod = m_autoBalanceManaMod; // AutoBalance: nothing to scale
+            m_appliedManaModifier = m_statModifiers.Mana; // nothing to scale
         return;
     }
 
@@ -1970,13 +1968,13 @@ void Creature::UpdateMaxPower(Powers power)
     value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_MAX_MANA, power);
     value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_ADD_ENERGY_PERCENT, power);
 
-    // AutoBalance: mana scaled to the number of players, the current mana keeps its percentage when the scale changes
-    if (power == POWER_MANA && (m_autoBalanceManaMod != 1.0f || m_autoBalanceAppliedManaMod != 1.0f))
+    // multiplier set by scripts (CreatureStatModifiers), the current mana keeps its percentage when it changes
+    if (power == POWER_MANA && (m_statModifiers.Mana != 1.0f || m_appliedManaModifier != 1.0f))
     {
-        value = std::max(1, int32(value * m_autoBalanceManaMod));
-        if (m_autoBalanceAppliedManaMod != m_autoBalanceManaMod)
+        value = std::max(1, int32(value * m_statModifiers.Mana));
+        if (m_appliedManaModifier != m_statModifiers.Mana)
         {
-            m_autoBalanceAppliedManaMod = m_autoBalanceManaMod;
+            m_appliedManaModifier = m_statModifiers.Mana;
             if (cur_maxpower > 0 && cur_maxpower != value)
             {
                 float pct = float(GetPower(power)) / float(cur_maxpower);

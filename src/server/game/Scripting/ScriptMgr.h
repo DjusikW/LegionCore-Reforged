@@ -143,6 +143,28 @@ class TC_GAME_API WorldScript : public ScriptObject
         virtual void OnShutdown() { }
 };
 
+// Global hooks on units and creatures (like AzerothCore's UnitScript / AllCreatureScript), for modules
+class TC_GAME_API UnitScript : public ScriptObject
+{
+    protected:
+
+        UnitScript(std::string name);
+
+    public:
+
+        // Called on every Creature::Update of a living creature, on any map
+        virtual void OnCreatureUpdate(Creature* /*creature*/, uint32 /*diff*/) { }
+
+        // Called for melee damage after the attacker's damage bonuses, before the target's reductions
+        virtual void ModifyMeleeDamage(Unit* /*target*/, Unit* /*attacker*/, uint32& /*damage*/) { }
+
+        // Called for spell damage after the damage variance, before armor and the target's reductions
+        virtual void ModifySpellDamageTaken(Unit* /*target*/, Unit* /*attacker*/, float& /*damage*/, SpellInfo const* /*spellInfo*/) { }
+
+        // Called for a periodic damage tick before the attacker's and the target's damage modifiers
+        virtual void ModifyPeriodicDamageAurasTick(Unit* /*target*/, Unit* /*attacker*/, uint32& /*damage*/, SpellInfo const* /*spellInfo*/) { }
+};
+
 class TC_GAME_API FormulaScript : public ScriptObject
 {
     protected:
@@ -890,6 +912,12 @@ class TC_GAME_API ScriptMgr
         void OnStartup();
         void OnShutdown();
         void OnWorldUpdate(uint32 diff);
+
+        /* UnitScript */
+        void OnCreatureUpdate(Creature* creature, uint32 diff);
+        void ModifyMeleeDamage(Unit* target, Unit* attacker, uint32& damage);
+        void ModifySpellDamageTaken(Unit* target, Unit* attacker, float& damage, SpellInfo const* spellInfo);
+        void ModifyPeriodicDamageAurasTick(Unit* target, Unit* attacker, uint32& damage, SpellInfo const* spellInfo);
 
         /* FormulaScript */
         void OnHonorCalculation(float& honor, uint8 level, float multiplier);

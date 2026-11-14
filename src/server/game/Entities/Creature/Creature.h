@@ -536,6 +536,21 @@ typedef std::map<uint32, time_t> CreatureSpellCooldowns;
 
 class IdleChat;
 
+// Multipliers of a creature's stats set by scripts and modules, 1.0 - untouched
+struct CreatureStatModifiers
+{
+    float Health = 1.0f;
+    float Damage = 1.0f;
+    float Armor = 1.0f;
+    float Mana = 1.0f;
+
+    bool operator==(CreatureStatModifiers const& other) const
+    {
+        return Health == other.Health && Damage == other.Damage && Armor == other.Armor && Mana == other.Mana;
+    }
+    bool operator!=(CreatureStatModifiers const& other) const { return !(*this == other); }
+};
+
 class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public MapObject
 {
     public:
@@ -842,11 +857,10 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint32 GetBossId() const { return bossid; }
         uint8 GetMobDifficulty() const { return m_difficulty; }
         uint32 GetPlayerCount() const { return m_playerCount; }
-        // AutoBalance: scaling to the actual number of players in dungeons and raids (worldserver.conf AutoBalance.*)
-        void UpdateAutoBalance();
-        void UpdateAutoBalanceAura();
-        float GetAutoBalanceDamageMod() const { return m_autoBalanceDamageMod; }
-        float GetAutoBalanceHealthMod() const { return m_autoBalanceHealthMod; }
+        // Stat multipliers set by scripts and modules (1.0 - untouched): the core applies Health, Armor and Mana
+        // in the stat updates, Damage is for the script's own UnitScript damage hooks.
+        CreatureStatModifiers const& GetStatModifiers() const { return m_statModifiers; }
+        void SetStatModifiers(CreatureStatModifiers const& mods);
 
         float GetFollowAngle() const override { return m_followAngle; }
         void SetFollowAngle(float angle) { m_followAngle = angle; }
@@ -965,17 +979,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint32 bossid;
         uint8 m_difficulty;
         uint32 m_playerCount;
-        uint32 m_autoBalancePlayerCount = 0;
-        uint32 m_autoBalanceGeneration = 0;
-        float m_autoBalanceHealthMod = 1.0f;
-        float m_autoBalanceDamageMod = 1.0f;
-        float m_autoBalanceAppliedHealthMod = 1.0f;
-        float m_autoBalanceArmorMod = 1.0f;
-        float m_autoBalanceManaMod = 1.0f;
-        float m_autoBalanceAppliedManaMod = 1.0f;
-        uint8 m_autoBalanceAuraStacks = 0;    // stacks the AutoBalance aura must show, 0 - no aura
-        bool m_autoBalanceAuraApplied = false;
-        bool m_autoBalanceAuraBlocked = false; // the aura could not be applied (immunity)
+        CreatureStatModifiers m_statModifiers;
+        float m_appliedHealthModifier = 1.0f; // m_statModifiers.Health already in the max health
+        float m_appliedManaModifier = 1.0f;   // m_statModifiers.Mana already in the max mana
         float m_followAngle;
         float m_followDistance = 2.0f;
 

@@ -1390,11 +1390,6 @@ class TC_GAME_API Unit : public WorldObject
         // the same number. Weapon min/max variance is a separate thing: it spreads the weapon's
         // own damage before any of this.
         static float GetDamageVariance();
-        // AutoBalance damage multiplier of a creature attacker in a dungeon or raid (1.0 when not scaled)
-        float GetAutoBalanceDamageMod() const;
-        // victim-aware: only damage dealt to players and their pets/guardians is balanced,
-        // creature vs creature damage (e.g. Nightmare Ichor exploding on the Eye of Il'gynoth) is not
-        float GetAutoBalanceDamageMod(Unit const* victim) const;
         void DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss);
         void HandleProcExtraAttackFor(Unit* victim);
         int32 CalculateMonkSpellDamage(float coeff);
