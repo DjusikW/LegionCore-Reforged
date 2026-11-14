@@ -30,7 +30,7 @@ void IndividualProgression::LoadConfig()
         _levelCaps[cap.first] = uint8(sConfigMgr->GetIntDefault("IndividualProgression.LevelCap." + std::to_string(cap.first), cap.second));
 
     _startingStage = ReadStage("StartingStage", 10);
-    if (!IsKnownStage(_startingStage))
+    if (!LevelCap(_startingStage))
     {
         TC_LOG_ERROR("server.loading", "[mod-individual-progression] StartingStage %u is not a stage, using 10", _startingStage);
         _startingStage = 10;
@@ -49,7 +49,7 @@ void IndividualProgression::LoadConfig()
     {
         std::istringstream fields(pair);
         uint32 entry = 0, stage = 0;
-        if (fields >> entry >> stage && stage <= 255 && IsKnownStage(uint8(stage)))
+        if (fields >> entry >> stage && stage <= 255 && LevelCap(uint8(stage)))
             _customBossStages[entry] = uint8(stage);
         else if (pair.find_first_not_of(' ') != std::string::npos)
             TC_LOG_ERROR("server.loading", "[mod-individual-progression] CustomProgression: bad pair '%s'", pair.c_str());
@@ -78,17 +78,30 @@ static void LoadTable(char const* query, std::unordered_map<uint32, uint8>& tabl
 
 void IndividualProgression::LoadData()
 {
+    _stageNames.clear();
+    if (QueryResult result = WorldDatabase.Query("SELECT stage, name FROM individual_progression_stage"))
+        do
+            _stageNames[(*result)[0].GetUInt8()] = (*result)[1].GetString();
+        while (result->NextRow());
+    if (_stageNames.empty())    // no data yet: one stage per expansion
+        for (auto const& cap : _levelCaps)
+            _stageNames[cap.first] = "";
+
     LoadTable("SELECT map_id, stage FROM individual_progression_map", _mapStages);
     LoadTable("SELECT zone_id, stage FROM individual_progression_zone", _zoneStages);
     LoadTable("SELECT quest_id, stage FROM individual_progression_quest", _questStages);
     LoadTable("SELECT creature_entry, stage FROM individual_progression_boss", _bossStages);
 
-    TC_LOG_INFO("server.loading", ">> [mod-individual-progression] %u maps, %u zones, %u quests, %u final bosses",
-        uint32(_mapStages.size()), uint32(_zoneStages.size()), uint32(_questStages.size()), uint32(_bossStages.size()));
+    TC_LOG_INFO("server.loading", ">> [mod-individual-progression] %u stages, %u maps, %u zones, %u quests, %u final bosses",
+        uint32(_stageNames.size()), uint32(_mapStages.size()), uint32(_zoneStages.size()), uint32(_questStages.size()), uint32(_bossStages.size()));
 }
 
 std::string IndividualProgression::StageName(uint8 stage) const
 {
+    auto itr = _stageNames.find(stage);
+    if (itr != _stageNames.end() && !itr->second.empty())
+        return itr->second;
+
     switch (stage / 10)
     {
         case 1: return "Классика";
@@ -100,6 +113,14 @@ std::string IndividualProgression::StageName(uint8 stage) const
         case 7: return "Легион";
         default: return "?";
     }
+}
+
+std::string IndividualProgression::StageList() const
+{
+    std::string list;
+    for (auto const& stage : _stageNames)
+        list += (list.empty() ? "" : ", ") + std::to_string(stage.first);
+    return list;
 }
 
 uint8 IndividualProgression::GetStage(ObjectGuid const& guid) const

@@ -162,7 +162,7 @@ public:
         static std::vector<ChatCommand> progressionCommandTable =
         {
             { "show", SEC_GAMEMASTER, true, &HandleShowCommand, "Syntax: .progression show [$name]\nStage of the character." },
-            { "set",  SEC_GAMEMASTER, true, &HandleSetCommand,  "Syntax: .progression set $stage [$name]\nSets the stage of the character (10, 20 ... 70)." },
+            { "set",  SEC_GAMEMASTER, true, &HandleSetCommand,  "Syntax: .progression set $stage [$name]\nSets the stage of the character (10, 11, 12, 20 ... 74)." },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -207,7 +207,7 @@ public:
 
         if (stage <= 0 || stage > 255 || !sIndividualProgression->IsKnownStage(uint8(stage)))
         {
-            handler->PSendSysMessage("Нет такого этапа: %s. Этапы: 10, 20, 30, 40, 50, 60, 70.", argStr.substr(0, space).c_str());
+            handler->PSendSysMessage("Нет такого этапа: %s. Этапы: %s.", argStr.substr(0, space).c_str(), sIndividualProgression->StageList().c_str());
             handler->SetSentErrorMessage(true);
             return false;
         }

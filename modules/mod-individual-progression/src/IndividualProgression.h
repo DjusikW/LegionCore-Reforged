@@ -24,9 +24,12 @@ public:
     void LoadData();                    // world tables: maps, zones, quests and final bosses of the stages
 
     bool IsEnabled() const { return _enabled; }
-    bool IsKnownStage(uint8 stage) const { return _levelCaps.count(stage) != 0; }
+    // Stages are raid tiers: 10, 11, 12 Classic, 20-23 Burning Crusade ... (individual_progression_stage).
+    bool IsKnownStage(uint8 stage) const { return _stageNames.count(stage) != 0; }
     std::string StageName(uint8 stage) const;
-    uint8 LevelCap(uint8 stage) const { auto itr = _levelCaps.find(stage); return itr != _levelCaps.end() ? itr->second : 0; }
+    std::string StageList() const;
+    // Level cap of the stage's expansion (LevelCap.10 for stages 10-19 ...).
+    uint8 LevelCap(uint8 stage) const { auto itr = _levelCaps.find(stage / 10 * 10); return itr != _levelCaps.end() ? itr->second : 0; }
 
     // Stage of a logged-in character (0 when unknown, excluded or the module is disabled: no limits).
     uint8 GetStage(ObjectGuid const& guid) const;
@@ -66,7 +69,8 @@ private:
     uint8 _alliedRacesUnlockStage = 70;
     std::string _excludedAccounts;
     std::regex _excludedAccountsRegex;
-    std::map<uint8, uint8> _levelCaps;  // stage -> max level, ordered by stage
+    std::map<uint8, uint8> _levelCaps;  // expansion stage (10, 20 ... 70) -> max level, ordered
+    std::map<uint8, std::string> _stageNames;
     std::unordered_map<uint32, uint8> _mapStages;
     std::unordered_map<uint32, uint8> _zoneStages;
     std::unordered_map<uint32, uint8> _questStages;

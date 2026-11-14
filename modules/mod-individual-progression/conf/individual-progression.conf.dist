@@ -5,8 +5,10 @@
 # .dist file is read first (defaults), then individual-progression.conf over it.
 # ".reload config" reads both again.
 #
-# Stages: 10 Classic, 20 Burning Crusade, 30 Wrath of the Lich King, 40 Cataclysm,
-#         50 Mists of Pandaria, 60 Warlords of Draenor, 70 Legion.
+# Stages are raid tiers in release order, grouped by expansion: 10-12 Classic, 20-23 Burning
+# Crusade, 30-34 Wrath of the Lich King, 40-42 Cataclysm, 50-52 Mists of Pandaria, 60-62 Warlords
+# of Draenor, 70-74 Legion (world table individual_progression_stage). The final boss of a tier
+# moves the group to the next stage (Ragnaros -> 11, Nefarian -> 12, C'Thun -> 20 ...).
 ###################################################################################################
 
 [worldserver]
@@ -29,7 +31,7 @@ IndividualProgression.StartingStage = 10
 
 #
 #    IndividualProgression.LevelCap.<stage>
-#        Highest level of each stage.
+#        Highest level of the stages of each expansion (LevelCap.10 for stages 10-12 ...).
 #        Default: 60, 70, 80, 85, 90, 100, 110
 
 IndividualProgression.LevelCap.10 = 60
