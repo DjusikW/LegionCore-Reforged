@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 DjusikW <https://github.com/DjusikW>
+// mod-individual-progression is licensed under the GNU AGPL v3 or later, see LICENSE in this folder.
+
 #include "IndividualProgression.h"
 #include "Chat.h"
 #include "Config.h"
