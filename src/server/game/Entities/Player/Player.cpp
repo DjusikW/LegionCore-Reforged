@@ -3754,6 +3754,8 @@ void Player::GiveXP(uint32 xp, Unit* victim, float groupRate /*= 1.0f*/)
     uint8 level = getLevel();
 
     sScriptMgr->OnGivePlayerXP(this, xp, victim);
+    if (!xp) // a script took the experience away (level cap of a module)
+        return;
 
     // Favored experience increase START
     float favoredExpMultiplier = 0;
