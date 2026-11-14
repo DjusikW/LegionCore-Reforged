@@ -14,6 +14,20 @@ CREATE TABLE IF NOT EXISTS `individual_progression_boss` (
   PRIMARY KEY (`creature_entry`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS `individual_progression_zone` (
+  `zone_id` INT UNSIGNED NOT NULL,
+  `stage` TINYINT UNSIGNED NOT NULL,
+  `comment` VARCHAR(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`zone_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `individual_progression_quest` (
+  `quest_id` INT UNSIGNED NOT NULL,
+  `stage` TINYINT UNSIGNED NOT NULL,
+  `comment` VARCHAR(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`quest_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 DELETE FROM `individual_progression_map`;
 INSERT INTO `individual_progression_map` (`map_id`, `stage`, `comment`) VALUES
 (33, 10, 'Крепость Темного Клыка'),
@@ -66,6 +80,7 @@ INSERT INTO `individual_progression_map` (`map_id`, `stage`, `comment`) VALUES
 (580, 20, 'Плато Солнечного Колодца'),
 (585, 20, 'Терраса Магистров'),
 (533, 30, 'Наксрамас'),
+(571, 30, 'Northrend'),
 (574, 30, 'Крепость Утгард'),
 (575, 30, 'Вершина Утгард'),
 (576, 30, 'Нексус'),
@@ -93,12 +108,14 @@ INSERT INTO `individual_progression_map` (`map_id`, `stage`, `comment`) VALUES
 (643, 40, 'Трон Приливов'),
 (644, 40, 'Чертоги Созидания'),
 (645, 40, 'Пещеры Черной горы'),
+(646, 40, 'Deepholm'),
 (657, 40, 'Вершина Смерча'),
 (669, 40, 'Твердыня Крыла Тьмы'),
 (670, 40, 'Грим Батол'),
 (671, 40, 'Сумеречный бастион'),
 (720, 40, 'Огненные Просторы'),
 (725, 40, 'Каменные Недра'),
+(732, 40, 'Tol Barad'),
 (754, 40, 'Трон Четырех Ветров'),
 (755, 40, 'Затерянный город Тол\'вир'),
 (757, 40, 'Крепость Барадин'),
@@ -107,6 +124,7 @@ INSERT INTO `individual_progression_map` (`map_id`, `stage`, `comment`) VALUES
 (939, 40, 'Источник Вечности'),
 (940, 40, 'Время Сумерек'),
 (967, 40, 'Душа Дракона'),
+(870, 50, 'Pandaria'),
 (959, 50, 'Монастырь Шадо-Пан'),
 (960, 50, 'Храм Нефритовой Змеи'),
 (961, 50, 'Хмелеварня Буйных Портеров'),
@@ -118,6 +136,7 @@ INSERT INTO `individual_progression_map` (`map_id`, `stage`, `comment`) VALUES
 (1011, 50, 'Осада храма Нюцзао'),
 (1098, 50, 'Престол Гроз'),
 (1136, 50, 'Осада Оргриммара'),
+(1116, 60, 'Draenor'),
 (1175, 60, 'Шлаковые шахты Кровавого Молота'),
 (1176, 60, 'Некрополь Призрачной Луны'),
 (1182, 60, 'Аукиндон'),
@@ -129,6 +148,8 @@ INSERT INTO `individual_progression_map` (`map_id`, `stage`, `comment`) VALUES
 (1279, 60, 'Вечное Цветение'),
 (1358, 60, 'Верхняя часть пика Черной горы'),
 (1448, 60, 'Цитадель Адского Пламени'),
+(1464, 60, 'Tanaan Jungle'),
+(1220, 70, 'Broken Isles'),
 (1456, 70, 'Око Азшары'),
 (1458, 70, 'Логово Нелтариона'),
 (1466, 70, 'Чаща Темного Сердца'),
@@ -143,6 +164,7 @@ INSERT INTO `individual_progression_map` (`map_id`, `stage`, `comment`) VALUES
 (1571, 70, 'Квартал Звезд'),
 (1648, 70, 'Испытание доблести'),
 (1651, 70, 'Возвращение в Каражан'),
+(1669, 70, 'Argus'),
 (1676, 70, 'Гробница Саргераса'),
 (1677, 70, 'Собор Вечной Ночи'),
 (1712, 70, 'Анторус, Пылающий Трон'),
@@ -155,3 +177,40 @@ INSERT INTO `individual_progression_boss` (`creature_entry`, `stage`, `comment`)
 (36597, 40, 'The Lich King (Icecrown Citadel)'),
 (71865, 60, 'Garrosh Hellscream (Siege of Orgrimmar)'),
 (91331, 70, 'Archimonde (Hellfire Citadel)');
+
+DELETE FROM `individual_progression_zone`;
+INSERT INTO `individual_progression_zone` (`zone_id`, `stage`, `comment`) VALUES
+(3483, 20, 'Hellfire Peninsula'),
+(3518, 20, 'Nagrand'),
+(3519, 20, 'Terokkar Forest'),
+(3520, 20, 'Shadowmoon Valley'),
+(3521, 20, 'Zangarmarsh'),
+(3522, 20, 'Blade\'s Edge Mountains'),
+(3523, 20, 'Netherstorm'),
+(3703, 20, 'Shattrath City'),
+(616, 40, 'Mount Hyjal'),
+(5146, 40, 'Vashj\'ir'),
+(4922, 40, 'Twilight Highlands'),
+(5034, 40, 'Uldum');
+
+DELETE FROM `individual_progression_quest`;
+INSERT INTO `individual_progression_quest` (`quest_id`, `stage`, `comment`) VALUES
+(28705, 20, 'Warchief\'s Command: Outland!'),
+(28708, 20, 'Hero\'s Call: Outland!'),
+(9407, 20, 'Through the Dark Portal'),
+(10119, 20, 'Through the Dark Portal'),
+(10046, 20, 'Through the Dark Portal'),
+(10951, 20, 'A Trip to the Dark Portal'),
+(10952, 20, 'A Trip to the Dark Portal'),
+(27566, 20, 'A Gathering in Outland'),
+(27572, 20, 'A Gathering in Outland'),
+(10297, 20, 'The Opening of the Dark Portal'),
+(29672, 20, 'The Opening of the Dark Portal'),
+(28709, 30, 'Hero\'s Call: Northrend!'),
+(28711, 30, 'Warchief\'s Command: Northrend!'),
+(12479, 30, 'Onwards to Northrend!'),
+(12480, 30, 'Onwards to Northrend!'),
+(13139, 30, 'Into The Frozen Heart Of Northrend'),
+(29386, 40, 'Hero\'s Call: Mount Hyjal!'),
+(26123, 40, 'When in Vashj\'ir...'),
+(26242, 40, 'Deepholm, Plane of Earth');
