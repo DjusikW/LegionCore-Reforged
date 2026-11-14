@@ -189,7 +189,7 @@ public:
 
         uint8 stage = StageOf(guid);
         if (!stage)
-            handler->PSendSysMessage("%s: этап не задан (будет назначен при входе).", name.c_str());
+            handler->PSendSysMessage("%s: этап не задан (будет назначен при входе; боты без этапа).", name.c_str());
         else
             handler->PSendSysMessage("%s: этап %u (%s).", name.c_str(), stage, sIndividualProgression->StageName(stage).c_str());
         return true;

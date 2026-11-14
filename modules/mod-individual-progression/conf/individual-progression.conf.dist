@@ -69,3 +69,11 @@ IndividualProgression.AlliedRacesUnlockStage = 70
 #        Default: 20
 
 IndividualProgression.DeathKnightStartStage = 20
+
+#
+#    IndividualProgression.ExcludedAccountsRegex
+#        Characters of accounts whose name matches have no stage and no limits (playerbots accounts,
+#        see Playerbots.Create.AccountPrefix). Empty: no account is excluded. Case-insensitive.
+#        Default: "^PLAYERBOT"
+
+IndividualProgression.ExcludedAccountsRegex = "^PLAYERBOT"
