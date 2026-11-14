@@ -2352,6 +2352,8 @@ LfgLockMap LFGMgr::GetLockedDungeons(ObjectGuid guid)
             lockData.status = LFG_LOCKSTATUS_RAID_LOCKED;
         else if (DisableMgr::IsDisabledFor(DISABLE_TYPE_LFG, dungeon->id, player) || DisableMgr::IsMapDisabledFor(dungeon->map, Difficulty(dungeon->difficulty)))
             lockData.status = LFG_LOCKSTATUS_TEMPORARILY_DISABLED;
+        else if (!player->isGameMaster() && !sScriptMgr->CanPlayerEnterMap(player, sMapStore.LookupEntry(dungeon->map), false))
+            lockData.status = LFG_LOCKSTATUS_INSUFFICIENT_EXPANSION;
         else if (dungeon->minlevel > level)
             lockData.status = LFG_LOCKSTATUS_TOO_LOW_LEVEL;
         // 0x800 marks the scenarios a quest sends the player into (Defense of Karabor, Thunder Forge...): the quest gates them, not the level cap
