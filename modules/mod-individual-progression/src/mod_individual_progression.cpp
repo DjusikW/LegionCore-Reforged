@@ -135,6 +135,12 @@ public:
         return false;
     }
 
+    // Death knights, demon hunters and allied races need a character of the unlock stage on the account.
+    bool CanCreateCharacter(WorldSession* session, uint8 race, uint8 playerClass) override
+    {
+        return !sIndividualProgression->IsEnabled() || sIndividualProgression->CanCreate(session, race, playerClass);
+    }
+
     void OnLogout(Player* player) override
     {
         sIndividualProgression->OnLogout(player->GetGUID());

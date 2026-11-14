@@ -49,3 +49,23 @@ IndividualProgression.LevelCap.70 = 110
 #        Default: ""
 
 IndividualProgression.CustomProgression = ""
+
+#
+#    IndividualProgression.DeathKnightUnlockStage
+#    IndividualProgression.DemonHunterUnlockStage
+#    IndividualProgression.AlliedRacesUnlockStage
+#        A death knight, a demon hunter or an allied race (Nightborne, Highmountain Tauren, Void Elf,
+#        Lightforged Draenei) can be created only when a character of the account has this stage.
+#        Default: 20, 70, 70
+
+IndividualProgression.DeathKnightUnlockStage = 20
+IndividualProgression.DemonHunterUnlockStage = 70
+IndividualProgression.AlliedRacesUnlockStage = 70
+
+#
+#    IndividualProgression.DeathKnightStartStage
+#        Stage of a new death knight (other classes: StartingStage; demon hunters start at level 98,
+#        which gives stage 70).
+#        Default: 20
+
+IndividualProgression.DeathKnightStartStage = 20
