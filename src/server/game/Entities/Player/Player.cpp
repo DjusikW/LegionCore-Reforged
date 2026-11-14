@@ -18782,7 +18782,7 @@ bool Player::CanTakeQuest(Quest const* quest, bool msg)
         && SatisfyQuestNextChain(quest, msg) && SatisfyQuestPrevChain(quest, msg)
         && SatisfyQuestDay(quest, msg) && SatisfyQuestWeek(quest)
         && SatisfyGarrisonCampaign(quest) && SatisfyGarrisonInvasion(quest) && SatisfyQuestSeasonal(quest)
-        && SatisfyQuestConditions(quest, msg);
+        && SatisfyQuestConditions(quest, msg) && sScriptMgr->CanPlayerTakeQuest(this, quest, msg);
 }
 
 bool Player::CanAddQuest(Quest const* quest, bool msg)

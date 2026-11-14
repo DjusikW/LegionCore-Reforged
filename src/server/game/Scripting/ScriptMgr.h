@@ -621,6 +621,9 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Return false to refuse; notify: the script may tell the player why.
         virtual bool CanEnterMap(Player* /*player*/, MapEntry const* /*map*/, bool /*notify*/) { return true; }
 
+        // Called by Player::CanTakeQuest (quest giver lists and accepting). Return false to hide/refuse the quest.
+        virtual bool CanTakeQuest(Player* /*player*/, Quest const* /*quest*/, bool /*msg*/) { return true; }
+
         // Called when a player is killed by a creature
         virtual void OnPlayerKilledByCreature(Creature* /*killer*/, Player* /*killed*/) { }
 
@@ -1001,6 +1004,7 @@ class TC_GAME_API ScriptMgr
         void OnCreatureKill(Player* killer, Creature* killed);
         void OnCreatureDeath(Creature* killed, Unit* killer);
         bool CanPlayerEnterMap(Player* player, MapEntry const* map, bool notify);
+        bool CanPlayerTakeQuest(Player* player, Quest const* quest, bool msg);
         void OnPlayerKilledByCreature(Creature* killer, Player* killed);
         void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
         void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);

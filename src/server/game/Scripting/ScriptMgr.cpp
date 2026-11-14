@@ -2135,6 +2135,14 @@ bool ScriptMgr::CanPlayerEnterMap(Player* player, MapEntry const* map, bool noti
     return true;
 }
 
+bool ScriptMgr::CanPlayerTakeQuest(Player* player, Quest const* quest, bool msg)
+{
+    FOR_SCRIPTS_RET(PlayerScript, itr, end, true)
+        if (!itr->second->CanTakeQuest(player, quest, msg))
+            return false;
+    return true;
+}
+
 void ScriptMgr::OnPlayerKilledByCreature(Creature* killer, Player* killed)
 {
     FOREACH_SCRIPT(PlayerScript)->OnPlayerKilledByCreature(killer, killed);
