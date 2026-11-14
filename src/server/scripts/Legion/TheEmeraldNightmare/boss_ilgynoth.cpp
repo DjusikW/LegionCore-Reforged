@@ -120,6 +120,17 @@ Position const blossPos[22] =
     {-12864.3f, 12307.0f, -253.70f}
 };
 
+// Il'gynoth itself is REACT_PASSIVE and immune to players until the Eye dies, so the formation's
+// AttackStart never engages it: its EnterCombat (encounter start, Deathglare/Corruptor tentacle
+// summons) only ran after the Eye's death. Pull the boss into combat when the Eye or a Dominator is engaged.
+static void EngageIlgynoth(Creature* me)
+{
+    if (Unit* owner = me->GetAnyOwner())
+        if (Creature* boss = owner->ToCreature())
+            if (boss->IsAlive() && !boss->isInCombat() && !boss->IsInEvadeMode() && boss->IsAIEnabled)
+                boss->AI()->DoZoneInCombat(boss, 150.0f);
+}
+
 //105393
 struct boss_ilgynoth : public BossAI
 {
@@ -409,6 +420,7 @@ struct npc_eye_of_ilgynoth : public ScriptedAI
     void EnterCombat(Unit* /*who*/) override
     {
         DoZoneInCombat();
+        EngageIlgynoth(me);
         events.RescheduleEvent(EVENT_1, 2000);
         events.RescheduleEvent(EVENT_2, 65000); //Summon Nightmare Horror
 
@@ -521,6 +533,7 @@ struct npc_ilgynoth_tentacles : public ScriptedAI
         switch (me->GetEntry())
         {
             case NPC_DOMINATOR_TENTACLE:
+                EngageIlgynoth(me);
                 events.RescheduleEvent(EVENT_1, 7000);
                 events.RescheduleEvent(EVENT_2, 13000);
                 rupturingRoarTimer = 4000;
@@ -540,8 +553,11 @@ struct npc_ilgynoth_tentacles : public ScriptedAI
         if (me->GetEntry() == NPC_SHRIVELED_EYESTALK)
             return;
 
+        // Wowhead guide: Dominator 4 Ichors, Deathglare 2, Corruptor 1 (Horror 4 - in its own script)
         if (me->GetEntry() == NPC_CORRUPTOR_TENTACLE)
             bloodCount = 1;
+        else if (me->GetEntry() == NPC_DOMINATOR_TENTACLE)
+            bloodCount = 4;
         else
             bloodCount = 2;
 

@@ -148,6 +148,7 @@ struct boss_xavius : public BossAI
 
     bool intro = true;
     uint8 healthPct = 0;
+    GuidSet dreamedPlayers; // players sent into the first Dream (95%)
     uint8 healthPhasePct = 0;
     uint8 eventPhase = 0;
 
@@ -155,6 +156,7 @@ struct boss_xavius : public BossAI
     {
         _Reset();
         healthPct = 95;
+        dreamedPlayers.clear();
         healthPhasePct = 65;
         eventPhase = 0;
         me->SetPower(POWER_ENERGY, 30);
@@ -191,7 +193,14 @@ struct boss_xavius : public BossAI
         StartEvents(PHASE_1);
 
         if (auto yzera = me->SummonCreature(NPC_YZERA, -2988.90f, -5028.98f, 182.07f))
+        {
+            // Ysera hung half inside the floor; on retail she circles above the ring of the arena
+            yzera->SetCanFly(true);
+            yzera->SetDisableGravity(true);
+            // wowhead screenshot: high above the edge of the arena, behind the boss
+            yzera->GetMotionMaster()->MoveCirclePath(-2988.90f, -5028.98f, 200.0f, 60.0f, true, 16);
             yzera->CastSpellDelay(yzera, 222713, false, 5000);
+        }
     }
 
     void JustDied(Unit* /*killer*/) override
@@ -253,15 +262,23 @@ struct boss_xavius : public BossAI
 
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 100.0f);
+            playerList.remove_if([](Player* p) { return !p || !p->IsAlive() || p->isGameMaster(); });
             if (!playerList.empty())
             {
-                Trinity::Containers::RandomResizeList(playerList, playerList.size() > 1 ? playerList.size() / 2 : 1);
+                // Wowhead: half of the raid dreams each time; the second Dream (60%) takes the half that did not dream at 95%
+                size_t count = playerList.size() > 1 ? playerList.size() / 2 : 1;
+                std::list<Player*> candidates;
+                for (Player* p : playerList)
+                    if (!dreamedPlayers.count(p->GetGUID()))
+                        candidates.push_back(p);
+                if (candidates.empty())
+                    candidates = playerList;
+                if (candidates.size() > count)
+                    Trinity::Containers::RandomResizeList(candidates, count);
 
-                for (auto const& player : playerList)
+                for (Player* player : candidates)
                 {
-                    if (!player || !player->IsAlive() || player->isGameMaster())
-                        continue;
-
+                    dreamedPlayers.insert(player->GetGUID());
                     player->CastSpell(player, SPELL_THE_DREAMING_SUM_CLONE, true);
                 }
                 if (auto yzera = me->FindNearestCreature(NPC_YZERA, 100.0f, true))
@@ -859,7 +876,8 @@ struct npc_xavius_event_conroller : public ScriptedAI
     EventMap events;
     InstanceScript* instance; // DATA_PRE_EVENT_XAVIUS
     
-    uint8 countAdds = 0;
+    uint8 countAdds = 0;  // big adds alive in the current wave
+    uint8 waveNumber = 0;
     uint32 checkEvade = 0;
     
     void MoveInLineOfSight(Unit* who) override
@@ -884,6 +902,7 @@ struct npc_xavius_event_conroller : public ScriptedAI
         }
         events.RescheduleEvent(EVENT_1, 5000);
         countAdds = 0;
+        waveNumber = 0;
     }
 
     void JustSummoned(Creature* summon) override
@@ -901,22 +920,59 @@ struct npc_xavius_event_conroller : public ScriptedAI
         if (summon->GetEntry() != NPC_IN_THE_SHADOW && summon->GetEntry() != NPC_NIGHTMARE_AMALGAMATION && summon->GetEntry() != NPC_SHADOW_POUNDER)
             return;
         
-        ++countAdds;
-        
-        switch(countAdds)
+        // wave over when all its big adds are dead (Dark Devourers do not count, as on retail)
+        if (countAdds && --countAdds == 0)
         {
+            if (waveNumber < 5)
+                events.RescheduleEvent(EVENT_1, 3000); // next wave
+            else
+                events.RescheduleEvent(EVENT_5, 5000); // gauntlet done
+        }
+    }
+
+    // Wowhead (Xavius guide, Trash Mobs): 5 waves, each with 12 Dark Devourers
+    // 1: Creature in the Shadows x3 | 2: Nightmare Amalgamation x3 | 3: Shadow Pounder x6
+    // 4: Creature x2 + Pounder x4   | 5: Creature x1 + Amalgamation x2 + Pounder x3
+    // Positions: 0-2 big adds at the edges, 3-9 stationary Pounders.
+    void SummonBig(uint32 entry, uint8 posIdx)
+    {
+        if (me->SummonCreature(entry, eventPos[posIdx], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
+            ++countAdds;
+    }
+
+    void SummonWave()
+    {
+        ++waveNumber;
+        countAdds = 0;
+        switch (waveNumber)
+        {
+            case 1:
+                for (uint8 i = 0; i < 3; ++i)
+                    SummonBig(NPC_IN_THE_SHADOW, i);
+                break;
+            case 2:
+                for (uint8 i = 0; i < 3; ++i)
+                    SummonBig(NPC_NIGHTMARE_AMALGAMATION, i);
+                break;
             case 3:
-                events.RescheduleEvent(EVENT_2, 3000);
+                for (uint8 i = 3; i < 9; ++i)
+                    SummonBig(NPC_SHADOW_POUNDER, i);
                 break;
-            case 6:
-                events.RescheduleEvent(EVENT_3, 3000);
+            case 4:
+                SummonBig(NPC_IN_THE_SHADOW, 0);
+                SummonBig(NPC_IN_THE_SHADOW, 1);
+                for (uint8 i = 3; i < 7; ++i)
+                    SummonBig(NPC_SHADOW_POUNDER, i);
                 break;
-            case 12:
-                events.RescheduleEvent(EVENT_5, 5000);
-                break;
-            default:
+            case 5:
+                SummonBig(NPC_NIGHTMARE_AMALGAMATION, 0);
+                SummonBig(NPC_NIGHTMARE_AMALGAMATION, 1);
+                SummonBig(NPC_IN_THE_SHADOW, 2);
+                for (uint8 i = 7; i < 10; ++i)
+                    SummonBig(NPC_SHADOW_POUNDER, i);
                 break;
         }
+        events.RescheduleEvent(EVENT_6, 5000); // Dark Devourers
     }
     
     void UpdateAI(uint32 diff) override
@@ -942,25 +998,7 @@ struct npc_xavius_event_conroller : public ScriptedAI
             switch (eventId)
             {
                 case EVENT_1:
-                    for (uint8 i = 0; i < 3; ++i)
-                        me->SummonCreature(NPC_IN_THE_SHADOW, eventPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
-                    events.RescheduleEvent(EVENT_6, 5000);
-                    break;
-                case EVENT_2:
-                    for (uint8 i = 0; i < 3; ++i)
-                        me->SummonCreature(NPC_NIGHTMARE_AMALGAMATION, eventPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
-                    events.RescheduleEvent(EVENT_6, 5000);
-                    break;
-                case EVENT_3:
-                    for (uint8 i = 0; i < 2; ++i)
-                        me->SummonCreature(NPC_NIGHTMARE_AMALGAMATION, eventPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
-                    me->SummonCreature(NPC_IN_THE_SHADOW, eventPos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
-                    events.RescheduleEvent(EVENT_4, 7000);
-                    events.RescheduleEvent(EVENT_6, 5000);
-                    break;
-                case EVENT_4:
-                    for (uint8 i = 3; i < 6; ++i)
-                        me->SummonCreature(NPC_SHADOW_POUNDER, eventPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    SummonWave();
                     break;
                 case EVENT_5:
                     {
@@ -972,9 +1010,13 @@ struct npc_xavius_event_conroller : public ScriptedAI
                         break;
                     }
                 case EVENT_6:
-                    for (uint8 i = 0; i < 6; ++i)
+                {
+                    // 12 per wave as on retail; 6 for a small group (< 5 players)
+                    uint8 devourers = instance->instance->GetPlayersCountExceptGMs() >= 5 ? 12 : 6;
+                    for (uint8 i = 0; i < devourers; ++i)
                         me->SummonCreature(NPC_DARK_DEVOURERS, me->GetPositionX() + irand(-25, 25), me->GetPositionY() + irand(-25, 25), me->GetPositionZ());
-                    break;                            
+                    break;
+                }
             }
         }
     }

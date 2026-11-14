@@ -206,6 +206,10 @@ struct boss_cenarius : public BossAI
 
     void EnterCombat(Unit* /*who*/) override
     {
+        // The pre-pull cosmetic channel (225782, cast in the constructor) kept UNIT_STATE_CASTING for the
+        // whole fight: UpdateAI returned before events and melee - no Forces of Nightmare, no Brambles,
+        // no melee, and Malfurion never got ACTION_2 for Cleansing Ground.
+        me->InterruptNonMeleeSpells(true);
         _EnterCombat();
         DoCast(me, SPELL_CREEPING_NIGHTMARES, true);
         powerTimer = 1000;
@@ -409,8 +413,13 @@ struct boss_cenarius : public BossAI
                     break;
                 }
                 case EVENT_NIGHTMARE_BRAMBLES:
-                    if (auto pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                {
+                    Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true);
+                    if (!pTarget) // small group / solo: no non-tank target
+                        pTarget = me->getVictim();
+                    if (pTarget)
                         DoCast(pTarget, SPELL_NIGHTMARE_BRAMBLES_SUM);
+                }
                     Talk(SAY_NIGHTMARE_BRAMBLES);
                     events.RescheduleEvent(EVENT_NIGHTMARE_BRAMBLES, 30000);
                     break;

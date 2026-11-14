@@ -122,6 +122,10 @@ public:
 
         void OnGameObjectCreate(GameObject* go) override
         {
+            // register gobjectData (Cenarius' chest): without it GetGuidData(GO_CENARIUS_CHEST) was empty
+            // and the chest never appeared after Cenarius died. Doors are added in the switch below.
+            AddObject(go, true);
+
             switch (go->GetEntry())
             {
                 case GO_NYTHENDRA_DOOR_1:

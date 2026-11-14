@@ -444,7 +444,8 @@ class spell_nythendra_rot : public SpellScript
     {
         if (Unit* caster = GetCaster())
         {
-            if (caster->getVictim())
+            // keep the tank only when nobody else can get Rot (small groups / solo test)
+            if (caster->getVictim() && targets.size() > 1)
                 targets.remove(caster->getVictim());
 
             if (caster->IsAIEnabled)

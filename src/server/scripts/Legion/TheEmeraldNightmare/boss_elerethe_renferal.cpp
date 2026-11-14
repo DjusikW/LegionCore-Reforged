@@ -382,6 +382,8 @@ struct boss_elerethe_renferal : public BossAI
                     break;
                 case SPELL_VILE_AMBUSH_JUMP:
                     me->SetDisableGravity(false);
+                    // Feeding Time's takeoff left AnimTier::Hover (hanging from the web, head down) after landing
+                    me->SetAnimTier(AnimTier::Ground);
                     me->SetReactState(REACT_AGGRESSIVE);
                     if (IsMythicRaid())
                         me->CastSpellDelay(me, SPELL_TANGLED_WEBS_AT, true, 100);
