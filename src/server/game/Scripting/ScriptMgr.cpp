@@ -2143,6 +2143,14 @@ bool ScriptMgr::CanPlayerTakeQuest(Player* player, Quest const* quest, bool msg)
     return true;
 }
 
+bool ScriptMgr::CanCreateCharacter(WorldSession* session, uint8 race, uint8 playerClass)
+{
+    FOR_SCRIPTS_RET(PlayerScript, itr, end, true)
+        if (!itr->second->CanCreateCharacter(session, race, playerClass))
+            return false;
+    return true;
+}
+
 void ScriptMgr::OnPlayerKilledByCreature(Creature* killer, Player* killed)
 {
     FOREACH_SCRIPT(PlayerScript)->OnPlayerKilledByCreature(killer, killed);

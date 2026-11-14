@@ -257,6 +257,12 @@ void WorldSession::HandleCharCreateOpcode(WorldPackets::Character::CreateChar& c
         return;
     }
 
+    if (!sScriptMgr->CanCreateCharacter(this, charCreate.CreateInfo->Race, charCreate.CreateInfo->Class))
+    {
+        SendCharCreate(CHAR_CREATE_DISABLED);
+        return;
+    }
+
     if (AccountMgr::IsPlayerAccount(GetSecurity()))
     {
         if ((1 << (charCreate.CreateInfo->Race - 1)) & uint32(sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_RACEMASK)))

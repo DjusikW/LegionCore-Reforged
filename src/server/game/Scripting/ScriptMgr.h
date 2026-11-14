@@ -624,6 +624,9 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called by Player::CanTakeQuest (quest giver lists and accepting). Return false to hide/refuse the quest.
         virtual bool CanTakeQuest(Player* /*player*/, Quest const* /*quest*/, bool /*msg*/) { return true; }
 
+        // Called when an account creates a character (any security level). Return false to refuse the race/class.
+        virtual bool CanCreateCharacter(WorldSession* /*session*/, uint8 /*race*/, uint8 /*playerClass*/) { return true; }
+
         // Called when a player is killed by a creature
         virtual void OnPlayerKilledByCreature(Creature* /*killer*/, Player* /*killed*/) { }
 
@@ -1005,6 +1008,7 @@ class TC_GAME_API ScriptMgr
         void OnCreatureDeath(Creature* killed, Unit* killer);
         bool CanPlayerEnterMap(Player* player, MapEntry const* map, bool notify);
         bool CanPlayerTakeQuest(Player* player, Quest const* quest, bool msg);
+        bool CanCreateCharacter(WorldSession* session, uint8 race, uint8 playerClass);
         void OnPlayerKilledByCreature(Creature* killer, Player* killed);
         void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
         void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);
