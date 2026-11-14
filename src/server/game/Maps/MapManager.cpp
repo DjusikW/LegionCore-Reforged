@@ -34,6 +34,7 @@
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "ScenarioMgr.h"
+#include "ScriptMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
 
@@ -171,6 +172,9 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
 
     if (player->isGameMaster())
         return true;
+
+    if (!sScriptMgr->CanPlayerEnterMap(player, entry, true))
+        return false;
 
     if (!entry->IsDungeon() || entry->IsGarrison())
         return true;

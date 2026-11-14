@@ -617,6 +617,10 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a creature is killed by any unit (Unit::Kill): a pet, a totem, a script or a player
         virtual void OnCreatureDeath(Creature* /*killed*/, Unit* /*killer*/) { }
 
+        // Called before a player enters a map (teleport, area trigger, login inside an instance; GMs excluded).
+        // Return false to refuse; notify: the script may tell the player why.
+        virtual bool CanEnterMap(Player* /*player*/, MapEntry const* /*map*/, bool /*notify*/) { return true; }
+
         // Called when a player is killed by a creature
         virtual void OnPlayerKilledByCreature(Creature* /*killer*/, Player* /*killed*/) { }
 
@@ -996,6 +1000,7 @@ class TC_GAME_API ScriptMgr
         void OnQuestAbandon(Player* player, Quest const* quest);
         void OnCreatureKill(Player* killer, Creature* killed);
         void OnCreatureDeath(Creature* killed, Unit* killer);
+        bool CanPlayerEnterMap(Player* player, MapEntry const* map, bool notify);
         void OnPlayerKilledByCreature(Creature* killer, Player* killed);
         void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
         void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);

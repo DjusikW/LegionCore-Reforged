@@ -2127,6 +2127,14 @@ void ScriptMgr::OnCreatureDeath(Creature* killed, Unit* killer)
     FOREACH_SCRIPT(PlayerScript)->OnCreatureDeath(killed, killer);
 }
 
+bool ScriptMgr::CanPlayerEnterMap(Player* player, MapEntry const* map, bool notify)
+{
+    FOR_SCRIPTS_RET(PlayerScript, itr, end, true)
+        if (!itr->second->CanEnterMap(player, map, notify))
+            return false;
+    return true;
+}
+
 void ScriptMgr::OnPlayerKilledByCreature(Creature* killer, Player* killed)
 {
     FOREACH_SCRIPT(PlayerScript)->OnPlayerKilledByCreature(killer, killed);
