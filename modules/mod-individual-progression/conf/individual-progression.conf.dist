@@ -7,10 +7,11 @@
 # .dist file is read first (defaults), then individual-progression.conf over it.
 # ".reload config" reads both again.
 #
-# Stages are raid tiers in release order, grouped by expansion: 10-12 Classic, 20-23 Burning
-# Crusade, 30-34 Wrath of the Lich King, 40-42 Cataclysm, 50-52 Mists of Pandaria, 60-62 Warlords
-# of Draenor, 70-74 Legion (world table individual_progression_stage). The final boss of a tier
-# moves the group to the next stage (Ragnaros -> 11, Nefarian -> 12, C'Thun -> 20 ...).
+# Stage x0 of an expansion is levelling and its dungeons; reaching the level cap opens x1 (the
+# launch raids), then the last boss of each raid tier opens the next tier, and the last tier opens
+# the next expansion: 0-3 Classic (Ragnaros -> 2, Nefarian -> 3, C'Thun -> 10), 10-14 Burning
+# Crusade, 20-25 Wrath of the Lich King, 30-33 Cataclysm, 40-43 Mists of Pandaria, 50-53 Warlords
+# of Draenor, 60-65 Legion (world table individual_progression_stage).
 ###################################################################################################
 
 [worldserver]
@@ -27,29 +28,30 @@ IndividualProgression.Enable = 1
 #    IndividualProgression.StartingStage
 #        Stage of a new character. A character that logs in for the first time with the module
 #        gets the higher of this stage and the stage of its level.
-#        Default: 10
+#        Default: 0
 
-IndividualProgression.StartingStage = 10
+IndividualProgression.StartingStage = 0
 
 #
 #    IndividualProgression.LevelCap.<stage>
-#        Highest level of the stages of each expansion (LevelCap.10 for stages 10-12 ...).
+#        Highest level of the stages of each expansion (LevelCap.0 for stages 0-3, LevelCap.10 for
+#        stages 10-14 ...).
 #        Default: 60, 70, 80, 85, 90, 100, 110
 
-IndividualProgression.LevelCap.10 = 60
-IndividualProgression.LevelCap.20 = 70
-IndividualProgression.LevelCap.30 = 80
-IndividualProgression.LevelCap.40 = 85
-IndividualProgression.LevelCap.50 = 90
-IndividualProgression.LevelCap.60 = 100
-IndividualProgression.LevelCap.70 = 110
+IndividualProgression.LevelCap.0 = 60
+IndividualProgression.LevelCap.10 = 70
+IndividualProgression.LevelCap.20 = 80
+IndividualProgression.LevelCap.30 = 85
+IndividualProgression.LevelCap.40 = 90
+IndividualProgression.LevelCap.50 = 100
+IndividualProgression.LevelCap.60 = 110
 
 #
 #    IndividualProgression.CustomProgression
 #        Extra stage transitions: "entry stage, entry stage". Killing the creature moves every player
 #        of the instance (outside instances: the killer's group nearby) to the stage. Overrides the
 #        final bosses of individual_progression_boss for the same entry.
-#        Example: "15727 20, 25315 30"
+#        Example: "15727 10, 25315 20"
 #        Default: ""
 
 IndividualProgression.CustomProgression = ""
@@ -60,19 +62,19 @@ IndividualProgression.CustomProgression = ""
 #    IndividualProgression.AlliedRacesUnlockStage
 #        A death knight, a demon hunter or an allied race (Nightborne, Highmountain Tauren, Void Elf,
 #        Lightforged Draenei) can be created only when a character of the account has this stage.
-#        Default: 20, 70, 70
+#        Default: 10, 60, 60
 
-IndividualProgression.DeathKnightUnlockStage = 20
-IndividualProgression.DemonHunterUnlockStage = 70
-IndividualProgression.AlliedRacesUnlockStage = 70
+IndividualProgression.DeathKnightUnlockStage = 10
+IndividualProgression.DemonHunterUnlockStage = 60
+IndividualProgression.AlliedRacesUnlockStage = 60
 
 #
 #    IndividualProgression.DeathKnightStartStage
 #        Stage of a new death knight (other classes: StartingStage; demon hunters start at level 98,
-#        which gives stage 70).
-#        Default: 20
+#        which gives stage 60).
+#        Default: 10
 
-IndividualProgression.DeathKnightStartStage = 20
+IndividualProgression.DeathKnightStartStage = 10
 
 #
 #    IndividualProgression.ExcludedAccountsRegex

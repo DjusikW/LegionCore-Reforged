@@ -66,7 +66,7 @@ public:
             return;
 
         uint8 stage = sIndividualProgression->BossStage(killed->GetEntry());
-        if (!stage)
+        if (!stage)     // no stage is reached by a kill: 0 means "not a final boss"
             return;
 
         Map* map = killed->GetMap();
@@ -97,7 +97,7 @@ public:
 
         uint8 stage = sIndividualProgression->GetStage(player->GetGUID());
         uint8 need = sIndividualProgression->MapStage(map->ID);
-        if (!stage || need <= stage)
+        if (stage == IndividualProgression::NO_STAGE || need <= stage)
             return true;
 
         if (notify)
@@ -114,7 +114,7 @@ public:
 
         uint8 stage = sIndividualProgression->GetStage(player->GetGUID());
         uint8 need = sIndividualProgression->ZoneStage(newZone);
-        if (!stage || need <= stage)
+        if (stage == IndividualProgression::NO_STAGE || need <= stage)
             return;
 
         ChatHandler(player).PSendSysMessage("|cffff4040Недоступно:|r эта зона открывается на этапе %u (%s). Ваш этап: %u. Возврат к камню возвращения.",
@@ -130,7 +130,7 @@ public:
 
         uint8 stage = sIndividualProgression->GetStage(player->GetGUID());
         uint8 need = sIndividualProgression->QuestStage(quest);
-        if (!stage || need <= stage)
+        if (stage == IndividualProgression::NO_STAGE || need <= stage)
             return true;
 
         if (msg)
@@ -143,6 +143,12 @@ public:
     bool CanCreateCharacter(WorldSession* session, uint8 race, uint8 playerClass) override
     {
         return !sIndividualProgression->IsEnabled() || sIndividualProgression->CanCreate(session, race, playerClass);
+    }
+
+    void OnLevelChanged(Player* player, uint8 /*oldLevel*/) override
+    {
+        if (sIndividualProgression->IsEnabled())
+            sIndividualProgression->CheckLevelCap(player);
     }
 
     void OnLogout(Player* player) override
@@ -166,7 +172,7 @@ public:
         static std::vector<ChatCommand> progressionCommandTable =
         {
             { "show", SEC_GAMEMASTER, true, &HandleShowCommand, "Syntax: .progression show [$name]\nStage of the character." },
-            { "set",  SEC_GAMEMASTER, true, &HandleSetCommand,  "Syntax: .progression set $stage [$name]\nSets the stage of the character (10, 11, 12, 20 ... 74)." },
+            { "set",  SEC_GAMEMASTER, true, &HandleSetCommand,  "Syntax: .progression set $stage [$name]\nSets the stage of the character (0-3 Classic, 10-14 Burning Crusade ... 60-65 Legion)." },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -178,9 +184,8 @@ public:
     // Stage of an online character comes from the cache, of an offline one from the database.
     static uint8 StageOf(ObjectGuid const& guid)
     {
-        if (uint8 stage = sIndividualProgression->GetStage(guid))
-            return stage;
-        return sIndividualProgression->QueryStage(guid);
+        uint8 stage = sIndividualProgression->GetStage(guid);
+        return stage != IndividualProgression::NO_STAGE ? stage : sIndividualProgression->QueryStage(guid);
     }
 
     static bool HandleShowCommand(ChatHandler* handler, char const* args)
@@ -192,7 +197,7 @@ public:
             return false;
 
         uint8 stage = StageOf(guid);
-        if (!stage)
+        if (stage == IndividualProgression::NO_STAGE)
             handler->PSendSysMessage("%s: этап не задан (будет назначен при входе; боты без этапа).", name.c_str());
         else
             handler->PSendSysMessage("%s: этап %u (%s).", name.c_str(), stage, sIndividualProgression->StageName(stage).c_str());
@@ -206,10 +211,11 @@ public:
 
         std::string argStr(args);
         size_t space = argStr.find(' ');
-        int32 stage = atoi(argStr.substr(0, space).c_str());
+        std::string stageArg = argStr.substr(0, space);
+        int32 stage = !stageArg.empty() && stageArg.find_first_not_of("0123456789") == std::string::npos ? atoi(stageArg.c_str()) : -1;
         std::string rest = space == std::string::npos ? "" : argStr.substr(space + 1);
 
-        if (stage <= 0 || stage > 255 || !sIndividualProgression->IsKnownStage(uint8(stage)))
+        if (stage < 0 || stage >= IndividualProgression::NO_STAGE || !sIndividualProgression->IsKnownStage(uint8(stage)))
         {
             handler->PSendSysMessage("Нет такого этапа: %s. Этапы: %s.", argStr.substr(0, space).c_str(), sIndividualProgression->StageList().c_str());
             handler->SetSentErrorMessage(true);

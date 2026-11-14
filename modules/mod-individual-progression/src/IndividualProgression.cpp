@@ -28,22 +28,22 @@ void IndividualProgression::LoadConfig()
 {
     _enabled = sConfigMgr->GetBoolDefault("IndividualProgression.Enable", true);
 
-    static std::pair<uint8, uint8> const defaultCaps[] = { {10, 60}, {20, 70}, {30, 80}, {40, 85}, {50, 90}, {60, 100}, {70, 110} };
+    static std::pair<uint8, uint8> const defaultCaps[] = { {0, 60}, {10, 70}, {20, 80}, {30, 85}, {40, 90}, {50, 100}, {60, 110} };
     _levelCaps.clear();
     for (auto const& cap : defaultCaps)
         _levelCaps[cap.first] = uint8(sConfigMgr->GetIntDefault("IndividualProgression.LevelCap." + std::to_string(cap.first), cap.second));
 
-    _startingStage = ReadStage("StartingStage", 10);
+    _startingStage = ReadStage("StartingStage", 0);
     if (!LevelCap(_startingStage))
     {
-        TC_LOG_ERROR("server.loading", "[mod-individual-progression] StartingStage %u is not a stage, using 10", _startingStage);
-        _startingStage = 10;
+        TC_LOG_ERROR("server.loading", "[mod-individual-progression] StartingStage %u is not a stage, using 0", _startingStage);
+        _startingStage = 0;
     }
 
-    _deathKnightUnlockStage = ReadStage("DeathKnightUnlockStage", 20);
-    _deathKnightStartStage = ReadStage("DeathKnightStartStage", 20);
-    _demonHunterUnlockStage = ReadStage("DemonHunterUnlockStage", 70);
-    _alliedRacesUnlockStage = ReadStage("AlliedRacesUnlockStage", 70);
+    _deathKnightUnlockStage = ReadStage("DeathKnightUnlockStage", 10);
+    _deathKnightStartStage = ReadStage("DeathKnightStartStage", 10);
+    _demonHunterUnlockStage = ReadStage("DemonHunterUnlockStage", 60);
+    _alliedRacesUnlockStage = ReadStage("AlliedRacesUnlockStage", 60);
 
     // "entry stage, entry stage": killing the creature moves the group to the stage
     _customBossStages.clear();
@@ -131,7 +131,7 @@ uint8 IndividualProgression::GetStage(ObjectGuid const& guid) const
 {
     std::lock_guard<std::mutex> guard(_lock);
     auto itr = _stages.find(guid.GetCounter());
-    return itr != _stages.end() ? itr->second : 0;
+    return itr != _stages.end() ? itr->second : NO_STAGE;
 }
 
 void IndividualProgression::SetStage(ObjectGuid const& guid, uint8 stage)
@@ -149,7 +149,7 @@ uint8 IndividualProgression::QueryStage(ObjectGuid const& guid) const
 {
     if (QueryResult result = CharacterDatabase.PQuery("SELECT stage FROM character_progression WHERE guid = " UI64FMTD, guid.GetCounter()))
         return (*result)[0].GetUInt8();
-    return 0;
+    return NO_STAGE;
 }
 
 uint8 IndividualProgression::QuestStage(Quest const* quest) const
@@ -160,7 +160,7 @@ uint8 IndividualProgression::QuestStage(Quest const* quest) const
     // Quests of a later expansion above the first cap (level 61+): the expansion's own zones and breadcrumbs.
     // Lower ones (Pandaren and death knight starting quests) stay open.
     if (quest->Expansion >= 1 && quest->Expansion <= 6 && quest->MinLevel > _levelCaps.begin()->second)
-        return uint8((quest->Expansion + 1) * 10);
+        return uint8(quest->Expansion * 10);
     return 0;
 }
 
@@ -191,11 +191,18 @@ bool IndividualProgression::IsExcludedAccount(uint32 accountId) const
 void IndividualProgression::Advance(Player* player, uint8 stage)
 {
     uint8 current = GetStage(player->GetGUID());
-    if (!current || current >= stage)
+    if (current == NO_STAGE || current >= stage)
         return;
 
     SetStage(player->GetGUID(), stage);
     ChatHandler(player).PSendSysMessage("|cff00ff00Этап пройден!|r Новый этап: %u (%s), предел уровня %u.", stage, StageName(stage).c_str(), LevelCap(stage));
+}
+
+void IndividualProgression::CheckLevelCap(Player* player)
+{
+    uint8 stage = GetStage(player->GetGUID());
+    if (stage != NO_STAGE && stage % 10 == 0 && player->getLevel() >= LevelCap(stage) && IsKnownStage(stage + 1))
+        Advance(player, stage + 1);
 }
 
 bool IndividualProgression::CanCreate(WorldSession* session, uint8 race, uint8 playerClass) const
@@ -224,7 +231,7 @@ void IndividualProgression::OnLogin(Player* player)
 
     ObjectGuid guid = player->GetGUID();
     uint8 stage = QueryStage(guid);
-    if (!stage)
+    if (stage == NO_STAGE)
     {
         // First login with the module: new characters start at StartingStage, older ones get the stage of their level.
         stage = std::max(_startingStage, StageForLevel(player->getLevel()));
@@ -239,6 +246,7 @@ void IndividualProgression::OnLogin(Player* player)
     }
 
     ChatHandler(player).PSendSysMessage("Этап прогрессии: %u (%s), предел уровня %u.", stage, StageName(stage).c_str(), LevelCap(stage));
+    CheckLevelCap(player);
 }
 
 void IndividualProgression::OnLogout(ObjectGuid const& guid)

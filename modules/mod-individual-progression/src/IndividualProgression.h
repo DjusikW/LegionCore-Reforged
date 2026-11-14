@@ -22,24 +22,27 @@ class WorldSession;
 class IndividualProgression
 {
 public:
+    static constexpr uint8 NO_STAGE = 255;   // not loaded, excluded account or module disabled: no limits
+
     static IndividualProgression* instance();
 
     void LoadConfig();
     void LoadData();                    // world tables: maps, zones, quests and final bosses of the stages
 
     bool IsEnabled() const { return _enabled; }
-    // Stages are raid tiers: 10, 11, 12 Classic, 20-23 Burning Crusade ... (individual_progression_stage).
+    // Stage x0 of an expansion is levelling and dungeons, x1... its raid tiers: 0-3 Classic, 10-14 Burning Crusade ...
+    // (individual_progression_stage).
     bool IsKnownStage(uint8 stage) const { return _stageNames.count(stage) != 0; }
     std::string StageName(uint8 stage) const;
     std::string StageList() const;
-    // Level cap of the stage's expansion (LevelCap.10 for stages 10-19 ...).
+    // Level cap of the stage's expansion (LevelCap.0 for stages 0-3, LevelCap.10 for 10-14 ...).
     uint8 LevelCap(uint8 stage) const { auto itr = _levelCaps.find(stage / 10 * 10); return itr != _levelCaps.end() ? itr->second : 0; }
 
-    // Stage of a logged-in character (0 when unknown, excluded or the module is disabled: no limits).
+    // Stage of a logged-in character, NO_STAGE when unknown.
     uint8 GetStage(ObjectGuid const& guid) const;
     // Stores the stage in the cache (when the character is online) and in the database.
     void SetStage(ObjectGuid const& guid, uint8 stage);
-    // Stage of any character, online or not (database), 0 when it has none.
+    // Stage of any character, online or not (database), NO_STAGE when it has none.
     uint8 QueryStage(ObjectGuid const& guid) const;
 
     // Stage needed for a map / zone / quest (0: open to all), stage reached by killing a creature (0: none).
@@ -50,6 +53,8 @@ public:
 
     // Moves a logged-in character up to the stage (never down) and tells him.
     void Advance(Player* player, uint8 stage);
+    // Levelling stage (x0) at the level cap of its expansion: on to the first raid tier (x1).
+    void CheckLevelCap(Player* player);
     // Race/class creation rules by the highest stage of the account.
     bool CanCreate(WorldSession* session, uint8 race, uint8 playerClass) const;
 
@@ -66,14 +71,14 @@ private:
     }
 
     bool _enabled = true;
-    uint8 _startingStage = 10;
-    uint8 _deathKnightUnlockStage = 20;
-    uint8 _deathKnightStartStage = 20;
-    uint8 _demonHunterUnlockStage = 70;
-    uint8 _alliedRacesUnlockStage = 70;
+    uint8 _startingStage = 0;
+    uint8 _deathKnightUnlockStage = 10;
+    uint8 _deathKnightStartStage = 10;
+    uint8 _demonHunterUnlockStage = 60;
+    uint8 _alliedRacesUnlockStage = 60;
     std::string _excludedAccounts;
     std::regex _excludedAccountsRegex;
-    std::map<uint8, uint8> _levelCaps;  // expansion stage (10, 20 ... 70) -> max level, ordered
+    std::map<uint8, uint8> _levelCaps;  // levelling stage (0, 10 ... 60) -> max level, ordered
     std::map<uint8, std::string> _stageNames;
     std::unordered_map<uint32, uint8> _mapStages;
     std::unordered_map<uint32, uint8> _zoneStages;
