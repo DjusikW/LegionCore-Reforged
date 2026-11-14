@@ -110,7 +110,7 @@ void IndividualProgression::OnLogin(Player* player)
         _stages[guid.GetCounter()] = stage;
     }
 
-    ChatHandler(player).PSendSysMessage("Этап прогрессии: %u (%s), предел уровня %u.", stage, StageName(stage).c_str(), _levelCaps.count(stage) ? _levelCaps.at(stage) : 0);
+    ChatHandler(player).PSendSysMessage("Этап прогрессии: %u (%s), предел уровня %u.", stage, StageName(stage).c_str(), LevelCap(stage));
 }
 
 void IndividualProgression::OnLogout(ObjectGuid const& guid)

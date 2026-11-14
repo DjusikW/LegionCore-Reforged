@@ -38,6 +38,17 @@ public:
             sIndividualProgression->OnLogin(player);
     }
 
+    // No experience at the level cap of the stage (GM .levelup is not limited).
+    void OnGiveXP(Player* player, uint32& amount, Unit* /*victim*/) override
+    {
+        if (!sIndividualProgression->IsEnabled())
+            return;
+
+        uint8 cap = sIndividualProgression->LevelCap(sIndividualProgression->GetStage(player->GetGUID()));
+        if (cap && player->getLevel() >= cap)
+            amount = 0;
+    }
+
     void OnLogout(Player* player) override
     {
         sIndividualProgression->OnLogout(player->GetGUID());

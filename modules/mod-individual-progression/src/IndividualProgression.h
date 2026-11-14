@@ -23,6 +23,7 @@ public:
     bool IsEnabled() const { return _enabled; }
     bool IsKnownStage(uint8 stage) const { return _levelCaps.count(stage) != 0; }
     std::string StageName(uint8 stage) const;
+    uint8 LevelCap(uint8 stage) const { auto itr = _levelCaps.find(stage); return itr != _levelCaps.end() ? itr->second : 0; }
 
     // Stage of a logged-in character (0 when unknown: not loaded or module disabled).
     uint8 GetStage(ObjectGuid const& guid) const;
