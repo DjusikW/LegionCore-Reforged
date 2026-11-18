@@ -685,7 +685,10 @@ void WorldSession::RelocateMover(MovementInfo &movementInfo)
     // handle transport boarded / unboarded passenger on server - some transport checks must be moved in anticheat manager
     if (!movementInfo.transport.Guid.IsEmpty())
     {
-        if (movementInfo.transport.Pos.GetPositionX() > 75.0f || movementInfo.transport.Pos.GetPositionY() > 75.0f || movementInfo.transport.Pos.GetPositionZ() > 75.0f)
+        // Bogus offsets only: a 75 yd cap dropped every packet on large transports (the Gilneas gunship decks reach
+        // local z 90, its hull spans x -99..83), so the server lost the player there.
+        float const maxTransportOffset = 250.0f;
+        if (std::fabs(movementInfo.transport.Pos.GetPositionX()) > maxTransportOffset || std::fabs(movementInfo.transport.Pos.GetPositionY()) > maxTransportOffset || std::fabs(movementInfo.transport.Pos.GetPositionZ()) > maxTransportOffset)
             return;
 
         if (!Trinity::IsValidMapCoord(movementInfo.Pos.GetPositionX() + movementInfo.transport.Pos.GetPositionX(), movementInfo.Pos.GetPositionY() + movementInfo.transport.Pos.GetPositionY(),
